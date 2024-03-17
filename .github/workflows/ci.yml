@@ -1,0 +1,13 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build-linux-gcc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: build
+        run: |
+          make test
+        env:
+          CC: gcc

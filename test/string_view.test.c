@@ -6,7 +6,7 @@ int counter = 0;
 
 static void test_chop_by_line() {
 
-    const char* test = "This is a example of tests";
+    char* test = "This is a example of tests";
 
     String_View sv = build_from_char(test, strlen(test) + 1);
 

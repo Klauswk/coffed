@@ -12,7 +12,6 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location)
 
 	if (fd == NULL)
 	{
-		printf("It was not possible to open the file %s \n", (char *)file_location);
 		log_info("It was not possible to open the file %s \n", (char *)file_location);
 		return false;
 	}
@@ -24,9 +23,9 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location)
 	return true;
 }
 
-static void put_message(Main_Panel* mp, const char* message)
+static void put_message(Main_Panel* mp, const char* message, enum Message_Level level)
 {
-	show_message(&mp->mw, message);
+	show_message(&mp->mw, message, level);
 	getyx(mp->cw.window, mp->cw.cursor_y, mp->cw.cursor_x);
 	wmove(mp->cw.window, mp->cw.cursor_y, mp->cw.cursor_x);
 }
@@ -39,7 +38,7 @@ static void change_filter_status(void *main_panel, char *command)
 	{
 		if(strlen(command) < 10) {
 			log_info("Got into no file defined\n");
-			put_message(mp, "No file defined");
+			put_message(mp, "No file defined", ML_ERROR);
 			return;
 		}
 		char file_path[BUFFER_SIZE] = "";
@@ -47,8 +46,20 @@ static void change_filter_status(void *main_panel, char *command)
 		memcpy(file_path, command + 9, BUFFER_SIZE - 9);
 
 		if(!add_file_to_list(mp, file_path)) {
-			put_message(mp, "It was not able to open the file");
+			put_message(mp, "It was not able to open the file", ML_ERROR);
 		}
+		return;
+	} else if (command != NULL && strstr(command, ":setM") != NULL) {
+		if(strlen(command) < 7) {
+			log_info("No message defined\n");
+			put_message(mp, "No message defined", ML_ERROR);
+			return;
+		}
+		char message[BUFFER_SIZE] = "";
+
+		memcpy(message, command + 6, BUFFER_SIZE - 6);
+
+		put_message(mp, message, ML_INFO);
 		return;
 	}
 
@@ -94,7 +105,6 @@ int start_app(List *files)
 		start_color();
 		init_pair(1, COLOR_WHITE, COLOR_BLACK);
 		init_pair(2, COLOR_BLACK, COLOR_WHITE);
-		init_pair(3, COLOR_WHITE, COLOR_RED);
 	}
 
 	int row, col;
@@ -106,7 +116,6 @@ int start_app(List *files)
 	mp.mw = create_message_window(row, col);
 
 	Log log = {0};
-
 	while (1)
 	{
 		get_next_log(&log, ((FILE *)current_file->value));
@@ -131,7 +140,7 @@ int start_app(List *files)
 			}
 		}
 
-		if(handle_input_command_window(&mp.cw)) {
+		if(handle_input_command_window(&mp.cw) && mp.mw.is_showing) {
 			clear_message(&mp.mw);
 			wrefresh(mp.cw.window);
 		}

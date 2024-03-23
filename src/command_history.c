@@ -45,6 +45,7 @@ Command_History init_command_history(const char* command_file) {
         if(command_history_file==NULL)
         {
             log_info("Couldnt open the file %s for the history: %s\n", path_to_file, strerror(errno));
+            free(path_to_file);
         } else {
             char * line = NULL;
             size_t len = 255;
@@ -60,7 +61,7 @@ Command_History init_command_history(const char* command_file) {
             
             command_history_file = fopen(path_to_file, "a");
 
-            free(path_to_file);
+            ch.file_name = path_to_file;
 
             if(command_history_file==NULL)
             {
@@ -85,7 +86,7 @@ void add_to_command_history(Command_History* command_history, const char* comman
     }
 
     if(command_history->file_location != NULL) {
-        log_info("Writing history to file %s", command_history->file_location);
+        log_info("Writing history to file %s\n", command_history->file_name);
         fprintf(command_history->file_location, "%s\n" ,command);
         fflush(command_history->file_location);
     }

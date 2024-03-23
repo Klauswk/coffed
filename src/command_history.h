@@ -10,6 +10,7 @@
 
 typedef struct {
     FILE* file_location;
+    char* file_name;
     char** list_of_commands;
     long current_position;
     size_t count;

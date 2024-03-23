@@ -111,14 +111,14 @@ bool handle_input_command_window(Command_Window *window)
 
 	if (input != -1)
 	{
-		if (input == 567)
+		if (input == KEY_PPAGE)
 		{
 			window->callback(window->parent, ":GO_UP\t");
 
 			set_cursor_at_command_window(window);
 			return false;
 		}
-		else if (input == 526)
+		else if (input == KEY_NPAGE)
 		{
 			window->callback(window->parent, ":GO_DOWN\t");
 

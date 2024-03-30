@@ -65,6 +65,11 @@ static void refresh_log_window(Log_Window* window)
 static void add_line_to_log(Log_Window* window, String_View* sv)
 {
     mvwprintw(window->window, window->line_cursor, 1, String_View_Fmt, String_View_Arg(*sv));
+    size_t clear_to_end_of_screen = sv->size - 1;
+
+    for(size_t i = clear_to_end_of_screen; i < window->columns; i++) {
+        mvwprintw(window->window, window->line_cursor, i, " ");
+    }
 }
 
 static void process_list_to_lines(Log_Window* window, List* list) {

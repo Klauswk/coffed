@@ -48,7 +48,7 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
 static void clear_log_window(Log_Window* window)
 {
-    wclear(window->window);
+    //wclear(window->window);
     window->line_cursor = -1;
 }
 

@@ -17,7 +17,6 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 {
     Log_Window window = {0};
     WINDOW* newWindow = newwin(parentRows - 3, parentColumn, 1, 0);
-    WINDOW* header = newwin(1, parentColumn, 0, 0);
 
     window.line_cursor = -1;
     window.window = newWindow;
@@ -37,15 +36,11 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
     window.lv_current = window.log_view_list->head->value;
     window.log_view_header = create_log_view_header(parentRows, parentColumn, "Main");
-    window.header = header;
 
     getmaxyx(newWindow, window.rows, window.columns);
 
     wrefresh(window.window);
     
-    wbkgd(header, COLOR_PAIR(3));
-    wrefresh(header);
-
     draw(window.log_view_header);
 
     return window;

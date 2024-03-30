@@ -18,6 +18,7 @@ typedef struct Viewport {
 
 typedef struct Log_Window {
 	WINDOW* window;
+	WINDOW* header;
 	Viewport* viewport;
 	int columns;
 	int rows;

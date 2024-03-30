@@ -78,7 +78,7 @@ static void move_to_previously_tab(Command_Window *window)
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
 	Command_Window window = {0};
-	WINDOW *newWindow = newwin(4, parentColumn, parentRows - 3, 0);
+	WINDOW *newWindow = newwin(3, parentColumn, parentRows - 2, 0);
 	keypad(newWindow, TRUE);
 	window.window = newWindow;
 

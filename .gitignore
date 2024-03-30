@@ -1,3 +1,5 @@
 target/
 .vscode/
 log.log
+.flatpak-builder/
+build-dir/

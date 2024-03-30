@@ -16,8 +16,7 @@ static void free_sv_node(Node* node)
 Log_Window create_log_window(int parentRows, int parentColumn)
 {
     Log_Window window = {0};
-    WINDOW* border = newwin(parentRows - 2 * WINDOW_HEIGHT_OFFSET, parentColumn, WINDOW_HEIGHT_OFFSET, 0);
-    WINDOW* newWindow = derwin(border, parentRows - 2 * WINDOW_HEIGHT_OFFSET - WINDOW_OFFSET, parentColumn - WINDOW_OFFSET, 1, 1);
+    WINDOW* newWindow = newwin(parentRows - 6, parentColumn, 3, 0);
 
     window.line_cursor = -1;
     window.window = newWindow;
@@ -40,8 +39,6 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
     getmaxyx(newWindow, window.rows, window.columns);
 
-    box(border, 0, 0);
-    wrefresh(border);
     wrefresh(window.window);
 
     draw(window.log_view_header);

@@ -6,7 +6,7 @@ static int WINDOW_OFFSET = 2;
 Message_Window create_message_window(int parentRows, int parentColumn)
 {
     Message_Window window = {0};
-    WINDOW *newWindow = newwin(1, parentColumn, parentRows - 3, 0);
+    WINDOW *newWindow = newwin(1, parentColumn, parentRows - 2, 0);
     window.window = newWindow;
     window.is_showing = false;
 

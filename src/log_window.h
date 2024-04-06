@@ -11,9 +11,6 @@
 #include "log_view_header.h"
 #include "string_view.h"
 
-static int WINDOW_HEIGHT_OFFSET = 3;
-static int WINDOW_OFFSET = 2;
-
 typedef struct Viewport {
 	int start;
 	int end;

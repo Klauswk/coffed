@@ -43,8 +43,8 @@ void add_header_item(Log_View_Header* log_view_header, char* command)
     int numberOfLines = 3;
     int numberOfColumns = limit_number_of_caracters(strlen(header) + 1); //+ 1 for extra *
     int borderSideSize = 2; // 1 for each side of the border 
-    int beginY = 1; // the border consume the first column
-    int beginX = 1; // the border consume the first row
+    int beginY = 0; // the border consume the first column
+    int beginX = 0; // the border consume the first row
     int internalWindowLines = 1;
     
     int commulative_X = 0;
@@ -61,7 +61,7 @@ void add_header_item(Log_View_Header* log_view_header, char* command)
     
     Log_View_Header_Item* window = malloc(sizeof(Log_View_Header_Item));
     window->header_border = newwin(numberOfLines, numberOfColumns + borderSideSize, 0, commulative_X);
-    window->header_window = derwin(window->header_border, internalWindowLines, numberOfColumns, beginY, beginX);
+    window->header_window = derwin(window->header_border,internalWindowLines, numberOfColumns, beginY, beginX);
     window->is_main = 0;
     window->header = header;
     window->header_size = numberOfColumns;
@@ -129,7 +129,7 @@ void draw(Log_View_Header* window)
 	do
 	{
         Log_View_Header_Item* lvhi = n->value;
-        box(lvhi->header_border, 0, 0);
+        //box(lvhi->header_border, 0, 0);
         if(lvhi == window->current)
         {
             wbkgd(lvhi->header_window, COLOR_PAIR(2));

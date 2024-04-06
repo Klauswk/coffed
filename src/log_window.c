@@ -16,8 +16,7 @@ static void free_sv_node(Node* node)
 Log_Window create_log_window(int parentRows, int parentColumn)
 {
     Log_Window window = {0};
-    WINDOW* border = newwin(parentRows - 2 * WINDOW_HEIGHT_OFFSET, parentColumn, WINDOW_HEIGHT_OFFSET, 0);
-    WINDOW* newWindow = derwin(border, parentRows - 2 * WINDOW_HEIGHT_OFFSET - WINDOW_OFFSET, parentColumn - WINDOW_OFFSET, 1, 1);
+    WINDOW* newWindow = newwin(parentRows - 3, parentColumn, 1, 0);
 
     window.line_cursor = -1;
     window.window = newWindow;
@@ -40,10 +39,8 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
     getmaxyx(newWindow, window.rows, window.columns);
 
-    box(border, 0, 0);
-    wrefresh(border);
     wrefresh(window.window);
-
+    
     draw(window.log_view_header);
 
     return window;
@@ -51,7 +48,7 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
 static void clear_log_window(Log_Window* window)
 {
-    wclear(window->window);
+    //wclear(window->window);
     window->line_cursor = -1;
 }
 
@@ -68,6 +65,11 @@ static void refresh_log_window(Log_Window* window)
 static void add_line_to_log(Log_Window* window, String_View* sv)
 {
     mvwprintw(window->window, window->line_cursor, 1, String_View_Fmt, String_View_Arg(*sv));
+    size_t clear_to_end_of_screen = sv->size - 1;
+
+    for(size_t i = clear_to_end_of_screen; i < window->columns; i++) {
+        mvwprintw(window->window, window->line_cursor, i, " ");
+    }
 }
 
 static void process_list_to_lines(Log_Window* window, List* list) {

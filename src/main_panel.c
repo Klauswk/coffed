@@ -61,6 +61,13 @@ static void change_filter_status(void *main_panel, char *command)
 
 		put_message(mp, message, ML_INFO);
 		return;
+	} else if( command != NULL && strstr(command, ":RESIZE_WINDOW\t")) {
+		int row, col;
+
+		getmaxyx(stdscr, row, col);
+		resize_log_window(&mp->lw, row, col);
+		resize_command_window(&mp->cw, row, col);
+		return;
 	}
 
 	set_filter_log_window(&mp->lw, command);

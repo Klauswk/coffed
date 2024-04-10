@@ -75,6 +75,11 @@ static void move_to_previously_tab(Command_Window *window)
 	set_cursor_at_command_window(window);
 }
 
+static void resize_app_window(Command_Window *window)
+{
+	window->callback(window->parent, ":RESIZE_WINDOW\t");
+}
+
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
 	Command_Window window = {0};
@@ -123,6 +128,11 @@ bool handle_input_command_window(Command_Window *window)
 			window->callback(window->parent, ":GO_DOWN\t");
 
 			set_cursor_at_command_window(window);
+			return false;
+		}
+		else if (input == KEY_RESIZE)
+		{
+			resize_app_window(window);
 			return false;
 		}
 
@@ -206,4 +216,22 @@ bool handle_input_command_window(Command_Window *window)
 	}
 
 	return false;
+}
+
+void resize_command_window(Command_Window* window, int parentRows, int parentColumn)
+{
+    delwin(window->window);
+
+	WINDOW *newWindow = newwin(3, parentColumn, parentRows - 2, 0);
+	keypad(newWindow, TRUE);
+	window->window = newWindow;
+
+	window->input_position = 0;
+	window->columns = parentColumn - 2;
+	window->rows = parentRows - 2;
+
+	wmove(window->window, window->cursor_y, window->cursor_x);
+
+	wtimeout(window->window, 100);
+	mvwprintw(window->window, 1, 1, "%*.*s", 0, window->columns, window->command);
 }

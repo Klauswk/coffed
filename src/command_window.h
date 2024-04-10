@@ -29,4 +29,6 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
 
 bool handle_input_command_window(Command_Window* window);
 
+void resize_command_window(Command_Window* window, int parentRows, int parentColumn);
+
 #endif

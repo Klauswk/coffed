@@ -65,7 +65,7 @@ static void refresh_log_window(Log_Window* window)
 static void add_line_to_log(Log_Window* window, String_View* sv)
 {
     mvwprintw(window->window, window->line_cursor, 1, String_View_Fmt, String_View_Arg(*sv));
-    size_t clear_to_end_of_screen = sv->size - 1;
+    size_t clear_to_end_of_screen = sv->size;
 
     for(size_t i = clear_to_end_of_screen; i < window->columns; i++) {
         mvwprintw(window->window, window->line_cursor, i, " ");
@@ -344,6 +344,26 @@ static void dump_to_file(Log_Window* window, char* file)
 
         fclose(dump_file);
     }
+}
+
+void resize_log_window(Log_Window* window, int parentRows, int parentColumn) {
+    delwin(window->window);
+
+    WINDOW* newWindow = newwin(parentRows - 3, parentColumn, 1, 0);
+    
+    getmaxyx(window->window, window->rows, window->columns);
+
+    window->window = newWindow;
+    
+    List* cl = get_current_list(window);
+
+    clear_list(window->lines_to_display);
+    process_list_to_lines(window, cl);
+    window->viewport->start = window->lines_to_display->size - window->rows;
+    window->viewport->end = window->lines_to_display->size;
+    
+    redraw_log(window, window->viewport, window->screen_offset);
+    refresh_log_window(window);
 }
 
 void process_log_window(Log_Window* window, char *line, int line_size)

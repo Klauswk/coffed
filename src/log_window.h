@@ -37,4 +37,6 @@ void process_log_window(Log_Window* log_window, char *line, int line_size);
 
 void set_filter_log_window(Log_Window* window, char *command);
 
+void resize_log_window(Log_Window* window, int parentRows, int parentColumn);
+
 #endif

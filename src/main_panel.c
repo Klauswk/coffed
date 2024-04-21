@@ -12,7 +12,8 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location)
 
 	if (fd == NULL)
 	{
-		log_info("It was not possible to open the file %s \n", (char *)file_location);
+		printf("It was not possible to open the file %s: %s \n", (char *)file_location, strerror(errno));
+		log_info("It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
 		return false;
 	}
 
@@ -92,7 +93,9 @@ int start_app(List *files)
 
 	do
 	{
-		add_file_to_list(&mp, n->value);
+		if(!add_file_to_list(&mp, n->value)) {
+			return 1;
+		}
 
 		n = n->next;
 	} while (n != NULL);

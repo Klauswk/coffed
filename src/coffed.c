@@ -1,3 +1,4 @@
+#include <locale.h>
 #include "main_panel.h"
 #include "logger.h"
 
@@ -12,7 +13,8 @@ int main(int argc, char **argv)
 
 	List* files = malloc(sizeof(List));
 	init_list(files, argc, free_node);
-
+	setlocale(LC_ALL, "");
+	
 	char c;
 
 	#ifdef DEBUG

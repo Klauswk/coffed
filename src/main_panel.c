@@ -92,7 +92,13 @@ static void change_filter_status(void *main_panel, char *command)
 
 		long file_number = strtol(file_number_s, 0, 10);
 
-		if (file_number > 0) {
+		if (mp->list_file_descriptors->size == 1) {
+			log_info("The program needs at least 1 file to follow\n");
+			put_message(mp, "The program needs at least 1 file to follow", ML_ERROR);
+			return;
+		}
+
+		if (file_number >= 0) {
 			FILE* f = list_get_value_at(mp->list_file_descriptors, file_number); 
 			if (f != NULL) 
 				remove_value_from_list(mp->list_file_descriptors, f);

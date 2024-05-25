@@ -15,26 +15,20 @@ File_List_View create_file_list_view(int parentRows, int parentColumn)
 
 void show_file_list(File_List_View* file_list_view, List* list_of_files) 
 {
-    int MAXSIZE = 0xFFF;
-    char proclnk[0xFFF];
-    char filename[0xFFF];
-    FILE *fp;
-    int fno;
-    ssize_t r;
     int line = 1;
 
-    //wclear(file_list_view->window);
-
     FOR_EACH_IN_LIST(FILE*, el, list_of_files, {
-        fno = fileno(el);
+        char proc_link_path[4096];
+        char filename[4096];
+        int file_descriptor = fileno(el);
         
-        sprintf(proclnk, "/proc/self/fd/%d", fno);
-        r = readlink(proclnk, filename, MAXSIZE);
-        if (r < 0)
+        sprintf(proc_link_path, "/proc/self/fd/%d", file_descriptor);
+        ssize_t byte_count = readlink(proc_link_path, filename, 4096);
+        if (byte_count < 0)
         {
-            mvwprintw(file_list_view->window, line++, 1, "%d: Couldnt read FD: %d", line - 1, fno);
+            mvwprintw(file_list_view->window, line++, 1, "%d: Couldnt read FD: %d", line - 1, file_descriptor);
         } else {
-            filename[r] = '\0';
+            filename[byte_count] = '\0';
             mvwprintw(file_list_view->window, line++, 1, "%d: %s", line - 1, filename);
         }
     });

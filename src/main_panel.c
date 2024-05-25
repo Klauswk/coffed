@@ -69,6 +69,16 @@ static void change_filter_status(void *main_panel, char *command)
 		resize_log_window(&mp->lw, row, col);
 		resize_command_window(&mp->cw, row, col);
 		return;
+	} else if( command != NULL && strstr(command, ":SHOW_FILE_LIST\t")) {
+		if (!mp->lfv.isShowing) {
+			mp->lfv.isShowing = true;
+			show_file_list(&mp->lfv, mp->list_file_descriptors);
+			show_panel(mp->top);
+		} else {
+			mp->lfv.isShowing = false;
+			hide_panel(mp->top);
+		}
+		return;
 	}
 
 	set_filter_log_window(&mp->lw, command);
@@ -122,15 +132,29 @@ int start_app(List *files)
 
 	getmaxyx(stdscr, row, col);
 
+	PANEL  *my_panels[2];
+
 	mp.lw = create_log_window(row, col);
 	mp.cw = create_command_window(row, col, BUFFER_SIZE, &mp, change_filter_status);
 	mp.mw = create_message_window(row, col);
+	mp.lfv = create_file_list_view(row, col);
+
+	my_panels[0] = new_panel(mp.lw.window);
+	my_panels[1] = new_panel(mp.lfv.window);
+
+	hide_panel(my_panels[1]);
+
+	set_panel_userptr(my_panels[0], my_panels[1]);
+	set_panel_userptr(my_panels[1], my_panels[0]);
+	
+	mp.top = my_panels[1];
 
 	Log log = {0};
 	while (1)
 	{
+		update_panels();
 		get_next_log(&log, ((FILE *)current_file->value));
-		// fprintf(log_file,"read %d bytes from file.\n", nbytes);
+		
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
@@ -155,6 +179,8 @@ int start_app(List *files)
 			clear_message(&mp.mw);
 			wrefresh(mp.cw.window);
 		}
+		
+		doupdate();
 	}
 	endwin();
 

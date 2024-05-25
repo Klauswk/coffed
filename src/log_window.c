@@ -59,7 +59,7 @@ static void increase_line_counter_by(Log_Window* window, int value)
 
 static void refresh_log_window(Log_Window* window)
 {
-    wrefresh(window->window);
+    //wrefresh(window->window);
 }
 
 static void add_line_to_log(Log_Window* window, String_View* sv)
@@ -221,6 +221,7 @@ static void move_to_next_tab(Log_Window* window)
 
     clear_list(window->lines_to_display);
     process_list_to_lines(window, cl);
+    wclear(window->window);
     
     window->screen_offset = 0;
     window->viewport->start = window->lines_to_display->size - window->rows;
@@ -265,6 +266,7 @@ static void move_to_previously_tab(Log_Window* window)
 
     clear_list(window->lines_to_display);
     process_list_to_lines(window, cl);
+    wclear(window->window);
     
     window->screen_offset = 0;
     window->viewport->start = window->lines_to_display->size - window->rows;

@@ -134,6 +134,9 @@ bool handle_input_command_window(Command_Window *window)
 		{
 			resize_app_window(window);
 			return false;
+		} else if(input == 9) {
+			window->callback(window->parent, ":SHOW_FILE_LIST\t");
+			return false;
 		}
 
 		log_info("Typed the character with code %d and value %s \n", input, keyname(input));

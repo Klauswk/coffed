@@ -6,6 +6,9 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <panel.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
 
 #include "command_window.h"
 #include "log_window.h"

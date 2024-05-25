@@ -6,7 +6,7 @@ static void free_node(Node *node)
 	free(node);
 }
 
-static bool add_file_to_list(Main_Panel *mp, char *file_location)
+static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buffer[4096])
 {
 	FILE* fd = fopen(file_location, "r");
 
@@ -14,8 +14,36 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location)
 	{
 		printf("It was not possible to open the file %s: %s \n", (char *)file_location, strerror(errno));
 		log_info("It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
+		snprintf(error_buffer, 4096, "It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
 		return false;
 	}
+
+    struct stat file_stat1;  
+    int result = fstat (fileno(fd), &file_stat1);  
+
+	if (result < 0)
+	{
+		printf("It was not possible to open the file %s: %s \n", (char *)file_location, strerror(errno));
+		log_info("It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
+		snprintf(error_buffer, 4096, "It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
+		return false;
+	}
+
+	FOR_EACH_IN_LIST(FILE*, file, mp->list_file_descriptors, {
+
+    	struct stat file_stat;  
+    	int rStat = fstat (fileno(file), &file_stat);  
+
+		if (rStat >= 0) {
+			if (file_stat1.st_ino == file_stat.st_ino) {
+				printf("The file %s is already open \n", file_location);
+				log_info("The file %s is already open \n", file_location);
+				snprintf(error_buffer, 4096, "The file %s is already open \n", file_location);
+				return false;
+			}
+		}
+	});
+
 
 	fseek(fd, 0, SEEK_END);
 
@@ -45,10 +73,31 @@ static void change_filter_status(void *main_panel, char *command)
 		char file_path[BUFFER_SIZE] = "";
 
 		memcpy(file_path, command + 9, BUFFER_SIZE - 9);
+		
+		char error_buffer[4096];
 
-		if(!add_file_to_list(mp, file_path)) {
-			put_message(mp, "It was not able to open the file", ML_ERROR);
+		if(!add_file_to_list(mp, file_path, error_buffer)) {
+			put_message(mp, error_buffer, ML_ERROR);
 		}
+		return;
+	} else if (command != NULL && strstr(command, ":remFile") != NULL) {
+		if(strlen(command) < 10) {
+			log_info("Got into no file defined\n");
+			put_message(mp, "No file defined", ML_ERROR);
+			return;
+		}
+		char file_number_s[BUFFER_SIZE] = "";
+
+		memcpy(file_number_s, command + 9, BUFFER_SIZE - 9);
+
+		long file_number = strtol(file_number_s, 0, 10);
+
+		if (file_number > 0) {
+			FILE* f = list_get_value_at(mp->list_file_descriptors, file_number); 
+			if (f != NULL) 
+				remove_value_from_list(mp->list_file_descriptors, f);
+		}
+
 		return;
 	} else if (command != NULL && strstr(command, ":setM") != NULL) {
 		if(strlen(command) < 7) {
@@ -101,9 +150,11 @@ int start_app(List *files)
 
 	Node *n = files->head;
 
+	char error_buffer[4096];
+
 	do
 	{
-		if(!add_file_to_list(&mp, n->value)) {
+		if(!add_file_to_list(&mp, n->value, error_buffer)) {
 			return 1;
 		}
 
@@ -140,7 +191,7 @@ int start_app(List *files)
 	mp.lfv = create_file_list_view(row, col);
 
 	my_panels[0] = new_panel(mp.lw.window);
-	my_panels[1] = new_panel(mp.lfv.window);
+	my_panels[1] = new_panel(mp.lfv.border_win);
 
 	hide_panel(my_panels[1]);
 

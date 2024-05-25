@@ -10,6 +10,7 @@ typedef struct {
     int cols;
     int rows;
     bool isShowing;
+    WINDOW* border_win;
     WINDOW* window;
 
 } File_List_View;

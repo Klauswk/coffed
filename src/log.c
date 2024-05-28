@@ -19,6 +19,9 @@ static bool increase_log_capacity(Log* log, size_t amount)
 
 bool get_next_log(Log* log, FILE* file)
 {
+    if (file == NULL) {
+        return false;
+    }
 	size_t nbytes = 0;
 	char buf[BUFFER_SIZE] = {0};
     size_t current_pos = ftell(file);

@@ -21,6 +21,7 @@ typedef int file_descriptor;
 
 typedef struct Main_Panel {
     List* list_file_descriptors;
+    Node *current_file;
     Log_Window lw;
     Command_Window cw;
     Message_Window mw;

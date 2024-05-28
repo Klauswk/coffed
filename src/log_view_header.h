@@ -27,6 +27,6 @@ void add_header_item(Log_View_Header* log_view_header, char* header);
 
 void remove_header_at(Log_View_Header* log_view_header, Log_View_Header_Item* log_view_header_item);
 
-void draw(Log_View_Header* header);
+void draw_header_view(Log_View_Header* header);
 
 #endif

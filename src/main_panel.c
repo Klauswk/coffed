@@ -100,6 +100,16 @@ static void change_filter_status(void *main_panel, char *command)
 
 		if (file_number >= 0) {
 			FILE* f = list_get_value_at(mp->list_file_descriptors, file_number); 
+			if (mp->current_file->value == f) {
+				if (mp->current_file->next == NULL)
+				{
+					mp->current_file = mp->list_file_descriptors->head;
+				}
+				else
+				{
+					mp->current_file = mp->current_file->next;
+				} 
+			}
 			if (f != NULL) 
 				remove_value_from_list(mp->list_file_descriptors, f);
 		}
@@ -169,7 +179,7 @@ int start_app(List *files)
 
 	n = mp.list_file_descriptors->head;
 
-	Node *current_file = mp.list_file_descriptors->head;
+	mp.current_file = mp.list_file_descriptors->head;
 
 	// NCURSES LIB START
 	initscr();
@@ -210,7 +220,8 @@ int start_app(List *files)
 	while (1)
 	{
 		update_panels();
-		get_next_log(&log, ((FILE *)current_file->value));
+
+		get_next_log(&log, ((FILE *)mp.current_file->value));
 		
 		if (log.count > 0)
 		{
@@ -222,21 +233,20 @@ int start_app(List *files)
 		}
 		else
 		{
-			if (current_file->next == NULL)
+			if (mp.current_file->next == NULL)
 			{
-				current_file = mp.list_file_descriptors->head;
+				mp.current_file = mp.list_file_descriptors->head;
 			}
 			else
 			{
-				current_file = current_file->next;
+				mp.current_file = mp.current_file->next;
 			}
 		}
-
 		if(handle_input_command_window(&mp.cw) && mp.mw.is_showing) {
 			clear_message(&mp.mw);
 			wrefresh(mp.cw.window);
 		}
-		
+
 		doupdate();
 	}
 	endwin();

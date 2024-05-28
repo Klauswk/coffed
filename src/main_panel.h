@@ -26,6 +26,7 @@ typedef struct Main_Panel {
     Command_Window cw;
     Message_Window mw;
     File_List_View lfv;
+    PANEL* panels[2];
     PANEL* top;
 } Main_Panel;
 

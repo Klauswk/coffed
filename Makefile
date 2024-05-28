@@ -14,7 +14,7 @@ run : all
 	./target/coffed log.log
 
 debug: all
-	gdb --args ./target/coffed log.log
+	gdb --args ./target/coffed /mnt/c/Users/x037816/Documents/logback-config/mmb-services.log 
 
 .PHONY: test
 test:

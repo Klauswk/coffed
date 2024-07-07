@@ -41,7 +41,7 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
     wrefresh(window.window);
     
-    draw(window.log_view_header);
+    draw_header_view(window.log_view_header);
 
     return window;
 }
@@ -175,7 +175,7 @@ static void close_tab(Log_Window* window)
         //Remove the log view list
         remove_value_from_list(window->log_view_list, window->lv_current);
         window->lv_current = window->log_view_list->tail->value;
-        draw(window->log_view_header);
+        draw_header_view(window->log_view_header);
 
         window->screen_offset = 0;
         window->viewport->start = window->lines_to_display->size - window->rows;
@@ -217,7 +217,7 @@ static void move_to_next_tab(Log_Window* window)
     }
 
     List* cl = get_current_list(window);
-    draw(window->log_view_header);
+    draw_header_view(window->log_view_header);
 
     clear_list(window->lines_to_display);
     process_list_to_lines(window, cl);
@@ -262,7 +262,7 @@ static void move_to_previously_tab(Log_Window* window)
     }
 
     List* cl = get_current_list(window);
-    draw(window->log_view_header);
+    draw_header_view(window->log_view_header);
 
     clear_list(window->lines_to_display);
     process_list_to_lines(window, cl);
@@ -288,7 +288,7 @@ static void process_filter(Log_Window* window, char* command)
 
     add_header_item(window->log_view_header, lv_filter->filter_command);
 
-    draw(window->log_view_header);
+    draw_header_view(window->log_view_header);
 
     window->lv_current = lv_filter;
     log_info("Also filtering\n");

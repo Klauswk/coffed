@@ -15,6 +15,18 @@ File_List_View create_file_list_view(int parentRows, int parentColumn)
     return flv;
 }
 
+void resize_file_list_view(File_List_View* flv, int parentRows, int parentColumn) {
+    delwin(flv->border_win);
+    delwin(flv->window);
+
+    WINDOW* border_win = newwin(parentRows/2, parentColumn/2, parentRows/4, parentColumn/4);
+    WINDOW* newWindow = derwin(border_win, parentRows/2, parentColumn/2, 0, 0);
+    box(border_win, 0, 0);
+    flv->window = newWindow;
+    flv->border_win = border_win;
+    
+}
+
 void show_file_list(File_List_View* file_list_view, List* list_of_files) 
 {
     int line = 1;

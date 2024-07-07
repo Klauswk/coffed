@@ -59,6 +59,19 @@ static void put_message(Main_Panel* mp, const char* message, enum Message_Level 
 	wmove(mp->cw.window, mp->cw.cursor_y, mp->cw.cursor_x);
 }
 
+static void show_file_list_panel(Main_Panel* mp)
+{
+	mp->lfv.isShowing = true;
+	show_file_list(&mp->lfv, mp->list_file_descriptors);
+	show_panel(mp->top);
+}
+
+static void hide_file_list_panel(Main_Panel* mp)
+{
+	mp->lfv.isShowing = false;
+	hide_panel(mp->top);
+}
+
 static void change_filter_status(void *main_panel, char *command)
 {
 	Main_Panel *mp = (Main_Panel *)main_panel;
@@ -100,6 +113,16 @@ static void change_filter_status(void *main_panel, char *command)
 
 		if (file_number >= 0) {
 			FILE* f = list_get_value_at(mp->list_file_descriptors, file_number); 
+			if (mp->current_file->value == f) {
+				if (mp->current_file->next == NULL)
+				{
+					mp->current_file = mp->list_file_descriptors->head;
+				}
+				else
+				{
+					mp->current_file = mp->current_file->next;
+				} 
+			}
 			if (f != NULL) 
 				remove_value_from_list(mp->list_file_descriptors, f);
 		}
@@ -121,17 +144,26 @@ static void change_filter_status(void *main_panel, char *command)
 		int row, col;
 
 		getmaxyx(stdscr, row, col);
+		hide_panel(mp->panels[1]);
+		del_panel(mp->panels[0]);
+		del_panel(mp->panels[1]);
 		resize_log_window(&mp->lw, row, col);
+		resize_file_list_view(&mp->lfv, row, col);
+	 	mp->panels[0] = new_panel(mp->lw.window);
+	 	mp->panels[1] = new_panel(mp->lfv.window);
+		mp->top = mp->panels[1];
 		resize_command_window(&mp->cw, row, col);
+		if (!mp->lfv.isShowing) {
+			hide_file_list_panel(mp);
+		} else {
+			show_file_list_panel(mp);
+		}
 		return;
 	} else if( command != NULL && strstr(command, ":SHOW_FILE_LIST\t")) {
 		if (!mp->lfv.isShowing) {
-			mp->lfv.isShowing = true;
-			show_file_list(&mp->lfv, mp->list_file_descriptors);
-			show_panel(mp->top);
+			show_file_list_panel(mp);
 		} else {
-			mp->lfv.isShowing = false;
-			hide_panel(mp->top);
+			hide_file_list_panel(mp);
 		}
 		return;
 	}
@@ -169,7 +201,7 @@ int start_app(List *files)
 
 	n = mp.list_file_descriptors->head;
 
-	Node *current_file = mp.list_file_descriptors->head;
+	mp.current_file = mp.list_file_descriptors->head;
 
 	// NCURSES LIB START
 	initscr();
@@ -189,28 +221,24 @@ int start_app(List *files)
 
 	getmaxyx(stdscr, row, col);
 
-	PANEL  *my_panels[2];
-
 	mp.lw = create_log_window(row, col);
 	mp.cw = create_command_window(row, col, BUFFER_SIZE, &mp, change_filter_status);
 	mp.mw = create_message_window(row, col);
 	mp.lfv = create_file_list_view(row, col);
 
-	my_panels[0] = new_panel(mp.lw.window);
-	my_panels[1] = new_panel(mp.lfv.border_win);
+	mp.panels[0] = new_panel(mp.lw.window);
+	mp.panels[1] = new_panel(mp.lfv.border_win);
 
-	hide_panel(my_panels[1]);
+	hide_panel(mp.panels[1]);
 
-	set_panel_userptr(my_panels[0], my_panels[1]);
-	set_panel_userptr(my_panels[1], my_panels[0]);
-	
-	mp.top = my_panels[1];
+	mp.top = mp.panels[1];
 
 	Log log = {0};
 	while (1)
 	{
 		update_panels();
-		get_next_log(&log, ((FILE *)current_file->value));
+
+		get_next_log(&log, ((FILE *)mp.current_file->value));
 		
 		if (log.count > 0)
 		{
@@ -222,21 +250,20 @@ int start_app(List *files)
 		}
 		else
 		{
-			if (current_file->next == NULL)
+			if (mp.current_file->next == NULL)
 			{
-				current_file = mp.list_file_descriptors->head;
+				mp.current_file = mp.list_file_descriptors->head;
 			}
 			else
 			{
-				current_file = current_file->next;
+				mp.current_file = mp.current_file->next;
 			}
 		}
-
 		if(handle_input_command_window(&mp.cw) && mp.mw.is_showing) {
 			clear_message(&mp.mw);
 			wrefresh(mp.cw.window);
 		}
-		
+
 		doupdate();
 	}
 	endwin();

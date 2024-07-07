@@ -19,4 +19,6 @@ File_List_View create_file_list_view(int parentRows, int parentColumn);
 
 void show_file_list(File_List_View* file_list_view, List* list_of_files);
 
+void resize_file_list_view(File_List_View* flv, int parentRows, int parentColumn);
+    
 #endif //__FILE_LIST_VIEW_H

@@ -118,7 +118,7 @@ void remove_header_at(Log_View_Header* log_view_header, Log_View_Header_Item* lv
 
 }
 
-void draw(Log_View_Header* window)
+void draw_header_view(Log_View_Header* window)
 {
     List* headers = window->headers;
 

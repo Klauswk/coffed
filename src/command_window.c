@@ -104,14 +104,13 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
 	wrefresh(window.window);
 	wmove(window.window, window.cursor_y, window.cursor_x);
 
-	wtimeout(window.window, 100);
+	wtimeout(window.window, 10);
 
 	return window;
 }
 
 bool handle_input_command_window(Command_Window *window)
 {
-
 	int input = wgetch(window->window);
 
 	if (input != -1)
@@ -172,13 +171,13 @@ bool handle_input_command_window(Command_Window *window)
 		{
 			close_tab(window);
 		}
-		else if (input == 561)
+		else if (input == 560)
 		{
 			log_info("Going to next tab \n");
 			move_to_next_tab(window);
 			return false;
 		}
-		else if (input == 546)
+		else if (input == 545)
 		{
 			log_info("Going to previously tab \n");
 			move_to_previously_tab(window);
@@ -217,7 +216,6 @@ bool handle_input_command_window(Command_Window *window)
 		mvwprintw(window->window, 1, 1, "%*.*s", 0, window->columns, window->command);
 		return true;
 	}
-
 	return false;
 }
 

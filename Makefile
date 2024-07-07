@@ -14,7 +14,7 @@ run : all
 	./target/coffed log.log
 
 debug: all
-	gdb --args ./target/coffed log.log
+	gdb --args ./target/coffed log.log 
 
 .PHONY: test
 test:

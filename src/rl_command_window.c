@@ -229,16 +229,16 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
 	return window;
 }
 
-/*#define manual_buffer_size 6
+#define manual_buffer_size 6
 
-char manual_keypad_buffer[manual_buffer_size];
+int manual_keypad_buffer[manual_buffer_size] = {0};
 int place = 0;
 
 clock_t before = 0;
 int msec = 0, trigger = 5; 
 int start_buffering = 0;
 
-static void test(char buffer_input) {
+static void test(int* buffer_input) {
 
     if(before == 0) {
         before = clock();
@@ -255,15 +255,17 @@ static void test(char buffer_input) {
 
         int result = 0;
 
-        for(int i = 0; i < manual_buffer_size; i+=2) {
-            result += (manual_keypad_buffer[i] & manual_keypad_buffer[i + 1]);
-        }
-        log_info("%s %s %s \n", keyname(manual_keypad_buffer[0] & manual_keypad_buffer[1]),
-        keyname(manual_keypad_buffer[2] & manual_keypad_buffer[3]),
-        keyname(manual_keypad_buffer[4] & manual_keypad_buffer[5]));
-        
-        log_info("Buffered result %d and value %s \n", result, keyname(result));
-
+        //log_info("%s %s %s %s %s %s\n", keyname(manual_keypad_buffer[0]), keyname(manual_keypad_buffer[1]),
+        //keyname(manual_keypad_buffer[2]), keyname(manual_keypad_buffer[3]),
+        //keyname(manual_keypad_buffer[4]), keyname(manual_keypad_buffer[5]));
+        //
+        //log_info("Buffered result %d and value %s \n", result, keyname(result));
+				if(manual_keypad_buffer[1] == '[' && manual_keypad_buffer[2] == 'B') {
+					*buffer_input = KEY_DOWN;
+				}
+				else if(manual_keypad_buffer[1] == '[' && manual_keypad_buffer[2] == 'A') {
+					*buffer_input = KEY_UP;
+				}
         for(int i = 0; i < manual_buffer_size; i++) {
             manual_keypad_buffer[i] = 0;
         }
@@ -271,16 +273,16 @@ static void test(char buffer_input) {
         if(place >= manual_buffer_size) {
             place = 0;
         }
-        if(buffer_input == 27 && place == 0) {
+        if(*buffer_input == 27 && place == 0) {
             //manual_keypad_buffer[place++] = buffer_input;
             start_buffering = 1;
         } 
         
         if (start_buffering) {
-            manual_keypad_buffer[place++] = buffer_input;
+            manual_keypad_buffer[place++] = *buffer_input;
         }
     }
-}*/
+}
 
 bool handle_input_command_window(Command_Window *window)
 {
@@ -288,18 +290,18 @@ bool handle_input_command_window(Command_Window *window)
     
 	if (input != -1)
 	{
-        //test(input);
-		if (input == ('k' & 0x1F))
+    test(&input);
+		if (input == KEY_UP)
 		{
-            log_info("Go up\n");
+      log_info("Go up\n");
 			window->callback(window->parent, ":GO_UP\t");
 
 			//set_cursor_at_command_window(window);
 			return false;
 		}
-		else if (input == ('j' & 0x1F))
+		else if (input == KEY_DOWN) 
 		{
-            log_info("Go down\n");
+      log_info("Go down\n");
 			window->callback(window->parent, ":GO_DOWN\t");
 
 			//set_cursor_at_command_window(window);
@@ -331,9 +333,9 @@ bool handle_input_command_window(Command_Window *window)
 			return false;
 		}
 
-        log_info("Typed the character with code %d and value %s \n", input, keyname(input));
+     log_info("Typed the character with code %d and value %s \n", input, keyname(input));
 		
-        forward_to_readline(input);
+     forward_to_readline(input);
     }
 	return false;
 }

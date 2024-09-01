@@ -8,7 +8,7 @@ static void free_node(Node *node)
 
 static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buffer[4096])
 {
-	FILE* fd = fopen(file_location, "r");
+	FILE *fd = fopen(file_location, "r");
 
 	if (fd == NULL)
 	{
@@ -18,8 +18,8 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		return false;
 	}
 
-    struct stat file_stat1;  
-    int result = fstat (fileno(fd), &file_stat1);  
+	struct stat file_stat1;
+	int result = fstat(fileno(fd), &file_stat1);
 
 	if (result < 0)
 	{
@@ -29,13 +29,14 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		return false;
 	}
 
-	FOR_EACH_IN_LIST(FILE*, file, mp->list_file_descriptors, {
+	FOR_EACH_IN_LIST(FILE *, file, mp->list_file_descriptors, {
+		struct stat file_stat;
+		int rStat = fstat(fileno(file), &file_stat);
 
-    	struct stat file_stat;  
-    	int rStat = fstat (fileno(file), &file_stat);  
-
-		if (rStat >= 0) {
-			if (file_stat1.st_ino == file_stat.st_ino) {
+		if (rStat >= 0)
+		{
+			if (file_stat1.st_ino == file_stat.st_ino)
+			{
 				printf("The file %s is already open \n", file_location);
 				log_info("The file %s is already open \n", file_location);
 				snprintf(error_buffer, 4096, "The file %s is already open \n", file_location);
@@ -44,7 +45,6 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		}
 	});
 
-
 	fseek(fd, 0, SEEK_END);
 
 	add_to_list(mp->list_file_descriptors, fd);
@@ -52,21 +52,21 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 	return true;
 }
 
-static void put_message(Main_Panel* mp, const char* message, enum Message_Level level)
+static void put_message(Main_Panel *mp, const char *message, enum Message_Level level)
 {
 	show_message(&mp->mw, message, level);
 	getyx(mp->cw.window, mp->cw.cursor_y, mp->cw.cursor_x);
 	wmove(mp->cw.window, mp->cw.cursor_y, mp->cw.cursor_x);
 }
 
-static void show_file_list_panel(Main_Panel* mp)
+static void show_file_list_panel(Main_Panel *mp)
 {
 	mp->lfv.isShowing = true;
 	show_file_list(&mp->lfv, mp->list_file_descriptors);
 	show_panel(mp->top);
 }
 
-static void hide_file_list_panel(Main_Panel* mp)
+static void hide_file_list_panel(Main_Panel *mp)
 {
 	mp->lfv.isShowing = false;
 	hide_panel(mp->top);
@@ -78,7 +78,8 @@ static void change_filter_status(void *main_panel, char *command)
 
 	if (command != NULL && strstr(command, ":addFile") != NULL)
 	{
-		if(strlen(command) < 10) {
+		if (strlen(command) < 10)
+		{
 			log_info("Got into no file defined\n");
 			put_message(mp, "No file defined", ML_ERROR);
 			return;
@@ -86,15 +87,20 @@ static void change_filter_status(void *main_panel, char *command)
 		char file_path[BUFFER_SIZE] = "";
 
 		memcpy(file_path, command + 9, BUFFER_SIZE - 9);
-		
+
 		char error_buffer[4096];
 
-		if(!add_file_to_list(mp, file_path, error_buffer)) {
+		if (!add_file_to_list(mp, file_path, error_buffer))
+		{
 			put_message(mp, error_buffer, ML_ERROR);
 		}
+
 		return;
-	} else if (command != NULL && strstr(command, ":remFile") != NULL) {
-		if(strlen(command) < 10) {
+	}
+	else if (command != NULL && strstr(command, ":remFile") != NULL)
+	{
+		if (strlen(command) < 10)
+		{
 			log_info("Got into no file defined\n");
 			put_message(mp, "No file defined", ML_ERROR);
 			return;
@@ -105,15 +111,18 @@ static void change_filter_status(void *main_panel, char *command)
 
 		long file_number = strtol(file_number_s, 0, 10);
 
-		if (mp->list_file_descriptors->size == 1) {
+		if (mp->list_file_descriptors->size == 1)
+		{
 			log_info("The program needs at least 1 file to follow\n");
 			put_message(mp, "The program needs at least 1 file to follow", ML_ERROR);
 			return;
 		}
 
-		if (file_number >= 0) {
-			FILE* f = list_get_value_at(mp->list_file_descriptors, file_number); 
-			if (mp->current_file->value == f) {
+		if (file_number >= 0)
+		{
+			FILE *f = list_get_value_at(mp->list_file_descriptors, file_number);
+			if (mp->current_file->value == f)
+			{
 				if (mp->current_file->next == NULL)
 				{
 					mp->current_file = mp->list_file_descriptors->head;
@@ -121,15 +130,18 @@ static void change_filter_status(void *main_panel, char *command)
 				else
 				{
 					mp->current_file = mp->current_file->next;
-				} 
+				}
 			}
-			if (f != NULL) 
+			if (f != NULL)
 				remove_value_from_list(mp->list_file_descriptors, f);
 		}
 
 		return;
-	} else if (command != NULL && strstr(command, ":setM") != NULL) {
-		if(strlen(command) < 7) {
+	}
+	else if (command != NULL && strstr(command, ":setM") != NULL)
+	{
+		if (strlen(command) < 7)
+		{
 			log_info("No message defined\n");
 			put_message(mp, "No message defined", ML_ERROR);
 			return;
@@ -140,7 +152,9 @@ static void change_filter_status(void *main_panel, char *command)
 
 		put_message(mp, message, ML_INFO);
 		return;
-	} else if( command != NULL && strstr(command, ":RESIZE_WINDOW\t")) {
+	}
+	else if (command != NULL && strstr(command, ":RESIZE_WINDOW\t"))
+	{
 		int row, col;
 
 		getmaxyx(stdscr, row, col);
@@ -149,20 +163,28 @@ static void change_filter_status(void *main_panel, char *command)
 		del_panel(mp->panels[1]);
 		resize_log_window(&mp->lw, row, col);
 		resize_file_list_view(&mp->lfv, row, col);
-	 	mp->panels[0] = new_panel(mp->lw.window);
-	 	mp->panels[1] = new_panel(mp->lfv.window);
+		mp->panels[0] = new_panel(mp->lw.window);
+		mp->panels[1] = new_panel(mp->lfv.window);
 		mp->top = mp->panels[1];
 		resize_command_window(&mp->cw, row, col);
-		if (!mp->lfv.isShowing) {
+		if (!mp->lfv.isShowing)
+		{
 			hide_file_list_panel(mp);
-		} else {
+		}
+		else
+		{
 			show_file_list_panel(mp);
 		}
 		return;
-	} else if( command != NULL && strstr(command, ":SHOW_FILE_LIST\t")) {
-		if (!mp->lfv.isShowing) {
+	}
+	else if (command != NULL && strstr(command, ":SHOW_FILE_LIST\t"))
+	{
+		if (!mp->lfv.isShowing)
+		{
 			show_file_list_panel(mp);
-		} else {
+		}
+		else
+		{
 			hide_file_list_panel(mp);
 		}
 		return;
@@ -192,7 +214,8 @@ int start_app(List *files)
 
 	do
 	{
-		if(!add_file_to_list(&mp, n->value, error_buffer)) {
+		if (!add_file_to_list(&mp, n->value, error_buffer))
+		{
 			return 1;
 		}
 
@@ -239,13 +262,13 @@ int start_app(List *files)
 		update_panels();
 
 		get_next_log(&log, ((FILE *)mp.current_file->value));
-		
+
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
 			process_log_window(&mp.lw, log.line, log.count);
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			
+
 			log.count = 0;
 		}
 		else
@@ -259,7 +282,8 @@ int start_app(List *files)
 				mp.current_file = mp.current_file->next;
 			}
 		}
-		if(handle_input_command_window(&mp.cw) && mp.mw.is_showing) {
+		if (handle_input_command_window(&mp.cw) && mp.mw.is_showing)
+		{
 			clear_message(&mp.mw);
 			wrefresh(mp.cw.window);
 		}

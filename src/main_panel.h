@@ -16,6 +16,7 @@
 #include "log.h"
 #include "message_window.h"
 #include "file_list_view.h"
+#include "formater.h"
 
 typedef int file_descriptor;
 
@@ -29,6 +30,7 @@ typedef struct Main_Panel {
     PANEL* panels[2];
     PANEL* top;
 } Main_Panel;
+
 
 int start_app(List* files);
 

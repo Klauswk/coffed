@@ -1,5 +1,9 @@
 #include "main_panel.h"
 
+static char* nop_callback(char* line, size_t size) {
+	return line;
+}
+
 static void free_node(Node *node)
 {
 	free(node->value);
@@ -29,9 +33,9 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		return false;
 	}
 
-	FOR_EACH_IN_LIST(FILE *, file, mp->list_file_descriptors, {
+	FOR_EACH_IN_LIST(Log_File*, log_file, mp->list_file_descriptors, {
 		struct stat file_stat;
-		int rStat = fstat(fileno(file), &file_stat);
+		int rStat = fstat(fileno(log_file->fd), &file_stat);
 
 		if (rStat >= 0)
 		{
@@ -46,8 +50,11 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 	});
 
 	fseek(fd, 0, SEEK_END);
-
-	add_to_list(mp->list_file_descriptors, fd);
+	
+	Log_File* log_file = malloc(sizeof(Log_File));
+	log_file->fd = fd;
+	log_file->callback = nop_callback;
+	add_to_list(mp->list_file_descriptors, log_file);
 
 	return true;
 }
@@ -120,7 +127,7 @@ static void change_filter_status(void *main_panel, char *command)
 
 		if (file_number >= 0)
 		{
-			FILE *f = list_get_value_at(mp->list_file_descriptors, file_number);
+			Log_File *f = list_get_value_at(mp->list_file_descriptors, file_number);
 			if (mp->current_file->value == f)
 			{
 				if (mp->current_file->next == NULL)
@@ -260,8 +267,10 @@ int start_app(List *files)
 	while (1)
 	{
 		update_panels();
+		
+		Log_File* current_file = (Log_File*) mp.current_file->value;
 
-		get_next_log(&log, ((FILE *)mp.current_file->value));
+		get_next_log(&log, current_file->fd);
 
 		if (log.count > 0)
 		{

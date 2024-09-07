@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-typedef char* (*Format_Callback)(char* line, size_t size);
+typedef char* (*Format_Callback)(const char* line,const size_t size);
 
 typedef struct Log_File
 {

@@ -13,13 +13,11 @@
 #include <wctype.h>
 #include <time.h>
 #include <math.h>
+#include <sys/param.h>
 
 #define _XOPEN_SOURCE 700
 
-#define max(a, b) \
-    ({ typeof(a) _a = a;    \
-     typeof(b) _b = b;    \
-     _a > _b ? _a : _b; })
+int wcwidth(wchar_t c);
 
 static int input;
 
@@ -62,7 +60,7 @@ static size_t strnwidth(const char *s, size_t n, size_t offset)
         }
         else
         {
-            width += iswcntrl(wc) ? 2 : max(0, wcwidth(wc));
+            width += iswcntrl(wc) ? 2 : MAX(0, wcwidth(wc));
         }
     }
 

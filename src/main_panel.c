@@ -1,7 +1,9 @@
 #include "main_panel.h"
 
-static char* nop_callback(char* line, size_t size) {
-	return line;
+static char* nop_callback(const char* line, size_t size) {
+	char* new_line = malloc(sizeof(char*) * size);
+	memcpy(new_line, line, size);
+	return new_line;
 }
 
 static void free_node(Node *node)
@@ -271,13 +273,15 @@ int start_app(List *files)
 		Log_File* current_file = (Log_File*) mp.current_file->value;
 
 		get_next_log(&log, current_file->fd);
+		
 
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			process_log_window(&mp.lw, log.line, log.count);
+			char* result = current_file->callback(log.line, (size_t) log.count);		
+			process_log_window(&mp.lw, result, strlen(result));
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-
+			free(result);
 			log.count = 0;
 		}
 		else

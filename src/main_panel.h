@@ -17,6 +17,8 @@
 #include "message_window.h"
 #include "file_list_view.h"
 #include "formater.h"
+#include "plugin_loader.h"
+#include "hash_map.h"
 
 typedef int file_descriptor;
 

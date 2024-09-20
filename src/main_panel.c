@@ -1,6 +1,6 @@
 #include "main_panel.h"
 
-static char* nop_callback(const char* line, size_t size) {
+static char* nop_callback(const char* line,const size_t size) {
 	char* new_line = malloc(sizeof(char*) * size);
 	memcpy(new_line, line, size);
 	return new_line;
@@ -55,7 +55,7 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 	
 	Log_File* log_file = malloc(sizeof(Log_File));
 	log_file->fd = fd;
-	log_file->callback = nop_callback;
+	log_file->plugin_name = "default";
 	add_to_list(mp->list_file_descriptors, log_file);
 
 	return true;
@@ -202,6 +202,20 @@ static void change_filter_status(void *main_panel, char *command)
 	set_filter_log_window(&mp->lw, command);
 }
 
+static Hash_Map plugins;
+
+static char* name_version_default_nop() {
+	return "nop";
+}
+
+static int load_available_plugins() {	
+	
+	put_value(&plugins, "default", (Formater_Plugin) {
+		.callback = nop_callback,
+		.name_version_callback = name_version_default_nop 
+	});		
+}
+
 int start_app(List *files)
 {
 
@@ -266,6 +280,9 @@ int start_app(List *files)
 	mp.top = mp.panels[1];
 
 	Log log = {0};
+	
+	load_available_plugins();
+
 	while (1)
 	{
 		update_panels();
@@ -278,7 +295,7 @@ int start_app(List *files)
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			char* result = current_file->callback(log.line, (size_t) log.count);		
+			char* result = get_value(&plugins, current_file->plugin_name)(log.line, (size_t) log.count);		
 			process_log_window(&mp.lw, result, strlen(result));
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
 			free(result);

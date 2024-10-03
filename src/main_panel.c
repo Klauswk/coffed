@@ -147,6 +147,23 @@ static void change_filter_status(void *main_panel, char *command)
 
 		return;
 	}
+	else if (command != NULL && strstr(command, ":loadPlugin") != NULL)
+	{
+		size_t command_size = strlen(command);
+		log_info("The size of the command is: %d\n");
+		if (command_size < 12)
+		{
+			log_info("Got into no file defined\n");
+			put_message(mp, "No file defined", ML_ERROR);
+			return;
+		}
+		char file_path[BUFFER_SIZE] = {0};
+		strncpy(file_path,command + 12, BUFFER_SIZE);
+		
+		log_info("Loading plugin: %s from command: %s\n", file_path, command);
+
+		return;
+	}
 	else if (command != NULL && strstr(command, ":setM") != NULL)
 	{
 		if (strlen(command) < 7)
@@ -249,7 +266,6 @@ int start_app(List *files)
 
 	mp.current_file = mp.list_file_descriptors->head;
 
-	// NCURSES LIB START
 	initscr();
 	cbreak();
 	noecho();

@@ -121,7 +121,8 @@ static void got_command(char *line)
         size_t cursor_col = prompt_width +
                             strnwidth(rl_line_buffer, rl_point, prompt_width);
         size_t line_size = cursor_col - prompt_width;
-        memcpy(command_Window.command, line, line_size);
+				memset(command_Window.command, 0, command_Window.buffer_size); 
+        strncpy(command_Window.command, line, line_size);
         command_Window.command[line_size + 1] = 0;
         command_Window.callback(command_Window.parent, command_Window.command);
         free(line);

@@ -158,7 +158,7 @@ static void change_filter_status(void *main_panel, char *command)
 		log_info("Loading plugin: %s from command: %s\n", file_path, command);
 	  Formater_Plugin* formater = malloc(sizeof(Formater_Plugin));
 	
-		if (load_plugin(formater, "nop") == 0) {
+		if (load_plugin(formater, file_path) == 0) {
 	     put_value(&plugins, file_path, formater); 
        log_info("The plugin was loaded into the hash_table\n");
    	}
@@ -220,12 +220,7 @@ static void change_filter_status(void *main_panel, char *command)
 	set_filter_log_window(&mp->lw, command);
 }
 
-
-static char* name_version_default_nop() {
-	return "nop";
-}
-
-static int load_available_plugins() {	
+static int load_nop_plugin() {	
   Formater_Plugin* plug = malloc(sizeof(Formater_Plugin));
 	
 	if (load_plugin(plug, "nop") == 0) {
@@ -300,7 +295,7 @@ int start_app(List *files)
 
 	Log log = {0};
 	
-	load_available_plugins();
+	load_nop_plugin();
 
 	while (1)
 	{

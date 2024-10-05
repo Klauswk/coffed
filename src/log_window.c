@@ -77,7 +77,7 @@ static void process_list_to_lines(Log_Window *window, List *list)
 {
 
     FOR_EACH_IN_LIST(char *, line, list, {
-        String_View sv = build_from_char(line, strlen(line));
+        String_View sv = build_from_char(line, strlen(line) + 1);
         String_View next_line = get_next_line(&sv, window->columns);
         int number_of_lines = 0;
         while (next_line.size > 0)

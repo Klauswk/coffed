@@ -81,6 +81,8 @@ static void hide_file_list_panel(Main_Panel *mp)
 	hide_panel(mp->top);
 }
 
+static Hash_Map plugins;
+
 static void change_filter_status(void *main_panel, char *command)
 {
 	Main_Panel *mp = (Main_Panel *)main_panel;
@@ -150,7 +152,6 @@ static void change_filter_status(void *main_panel, char *command)
 	else if (command != NULL && strstr(command, ":loadPlugin") != NULL)
 	{
 		size_t command_size = strlen(command);
-		log_info("The size of the command is: %d\n");
 		if (command_size < 12)
 		{
 			log_info("Got into no file defined\n");
@@ -161,7 +162,13 @@ static void change_filter_status(void *main_panel, char *command)
 		strncpy(file_path,command + 12, BUFFER_SIZE);
 		
 		log_info("Loading plugin: %s from command: %s\n", file_path, command);
-
+	  Formater_Plugin* formater = malloc(sizeof(Formater_Plugin));
+	
+		if (load_plugin(formater, "nop") == 0) {
+	     put_value(&plugins, file_path, formater); 
+       log_info("The plugin was loaded into the hash_table\n");
+   	}
+	
 		return;
 	}
 	else if (command != NULL && strstr(command, ":setM") != NULL)
@@ -219,18 +226,16 @@ static void change_filter_status(void *main_panel, char *command)
 	set_filter_log_window(&mp->lw, command);
 }
 
-static Hash_Map plugins;
 
 static char* name_version_default_nop() {
 	return "nop";
 }
 
 static int load_available_plugins() {	
-	
-	put_value(&plugins, "default", (Formater_Plugin) {
-		.callback = nop_callback,
-		.name_version_callback = name_version_default_nop 
-	});		
+  Formater_Plugin* plug = malloc(sizeof(Formater_Plugin));
+	plug->callback = nop_callback;
+	plug->name_version_callback = "default";	
+	put_value(&plugins, "default", plug);
 }
 
 int start_app(List *files)
@@ -280,7 +285,6 @@ int start_app(List *files)
 	}
 
 	int row, col;
-
 	getmaxyx(stdscr, row, col);
 
 	mp.lw = create_log_window(row, col);
@@ -312,7 +316,7 @@ int start_app(List *files)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
 			char* result = get_value(&plugins, current_file->plugin_name)(log.line, (size_t) log.count);		
-			process_log_window(&mp.lw, result, strlen(result));
+			process_log_window(&mp.lw, result, strlen(result) + 1);
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
 			free(result);
 			log.count = 0;

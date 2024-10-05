@@ -138,7 +138,7 @@ bool handle_input_command_window(Command_Window *window)
 			return false;
 		}
 
-		log_info("Typed the character with code %d and value %s \n", input, keyname(input));
+		log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 		// log_info("Typed the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with code %d and value %s \n", input, keyname(input));
 		if (input == KEY_BACKSPACE || input == KEY_DC || input == 127)
 		{

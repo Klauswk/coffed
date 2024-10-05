@@ -11,7 +11,7 @@ int hash(const char* key) {
 	return (hash * 31) % MAX_SIZE;
 }
 
-int put_value(Hash_Map* hash_map, const char* key, Formater_Plugin plugin) {
+int put_value(Hash_Map* hash_map, const char* key, Formater_Plugin* plugin) {
 	int hash_key = hash(key);
 
 	if (hash_map->values[hash_key].key == NULL) {
@@ -52,11 +52,11 @@ Format_Callback get_value(Hash_Map* hash_map, const char* key) {
 	}
 	
 	if (strcmp(hash_map->values[hash_key].key, key) == 0) {
-		return hash_map->values[hash_key].plugin.callback;
+		return hash_map->values[hash_key].plugin->callback;
 	} else {
 		for (size_t i = 0; i < MAX_SIZE; i++) {
 			if (hash_map->values[i].key != NULL && strcmp(hash_map->values[i].key, key) == 0) {
-				return hash_map->values[i].plugin.callback;
+				return hash_map->values[i].plugin->callback;
 			}
 		}
 	}
@@ -68,8 +68,9 @@ int delete_value(Hash_Map* hash_map, const char * key) {
 
 	if (hash_map->values[hash_key].key != NULL && strcmp(hash_map->values[hash_key].key, key) == 0) {
 		free(hash_map->values[hash_key].key);
+		free(hash_map->values[hash_key].plugin);
 		hash_map->values[hash_key].key = NULL;
-		hash_map->values[hash_key].plugin.callback = NULL;
+		hash_map->values[hash_key].plugin = NULL;
 		return 0;
 	}
 
@@ -77,8 +78,9 @@ int delete_value(Hash_Map* hash_map, const char * key) {
 
 		if (hash_map->values[i].key != NULL && strcmp(hash_map->values[i].key, key) == 0) {
 			free(hash_map->values[i].key);
+			free(hash_map->values[i].plugin);
 			hash_map->values[i].key = NULL;
-			hash_map->values[i].plugin.callback = NULL;
+			hash_map->values[i].plugin = NULL;
 			return 0;
 		}
 	}

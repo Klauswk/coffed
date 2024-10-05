@@ -219,7 +219,7 @@ bool handle_input_command_window(Command_Window *window)
 
         if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')
         {
-            log_info("Typed the character with code %d and value %s \n", input, keyname(input));
+            log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 
             forward_to_readline(input);
 

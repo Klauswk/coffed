@@ -1,6 +1,7 @@
 #ifndef PLUGIN_LOADER_H
 #define PLUGIN_LOADER_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>

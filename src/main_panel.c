@@ -1,11 +1,5 @@
 #include "main_panel.h"
 
-static char* nop_callback(const char* line,const size_t size) {
-	char* new_line = malloc(sizeof(char*) * size);
-	memcpy(new_line, line, size);
-	return new_line;
-}
-
 static void free_node(Node *node)
 {
 	free(node->value);
@@ -233,9 +227,14 @@ static char* name_version_default_nop() {
 
 static int load_available_plugins() {	
   Formater_Plugin* plug = malloc(sizeof(Formater_Plugin));
-	plug->callback = nop_callback;
-	plug->name_version_callback = "default";	
-	put_value(&plugins, "default", plug);
+	
+	if (load_plugin(plug, "nop") == 0) {
+	    put_value(&plugins, "default", plug); 
+      log_info("The plugin was loaded into the hash_table\n");
+  } else {
+			log_info("The default formater plugin could not be loaded");
+			exit(1);
+	}
 }
 
 int start_app(List *files)

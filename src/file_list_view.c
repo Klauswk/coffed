@@ -46,7 +46,7 @@ void show_file_list(File_List_View* file_list_view, List* list_of_files)
             mvwprintw(file_list_view->window, line++, 1, "%d: Couldnt read FD: %d", line - 1, file_descriptor);
         } else {
             filename[byte_count] = '\0';
-            mvwprintw(file_list_view->window, line++, 1, "%d: %s", line - 1, filename);
+            mvwprintw(file_list_view->window, line++, 1, "%d: %s - Formater: %s", line - 1, filename, el->plugin_name);
         }
     });
 }

@@ -21,7 +21,7 @@ int hash(const char* key);
 
 int put_value(Hash_Map* hash_map, const char* key, Formater_Plugin* plugin);
 
-Format_Callback get_value(Hash_Map* hash_map, const char* key);
+Formater_Plugin* get_value(Hash_Map* hash_map, const char* key);
 
 int delete_value(Hash_Map* hash_map, const char * key);
 

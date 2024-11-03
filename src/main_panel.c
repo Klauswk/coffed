@@ -143,6 +143,71 @@ static void change_filter_status(void *main_panel, char *command)
 
 		return;
 	}
+	else if (command != NULL && strstr(command, ":setPlugin") != NULL)
+	{
+		size_t command_exp_size = strlen(":setPlugin ");
+		size_t command_size = strlen(command);
+		if (command_size < command_exp_size)
+		{
+      log_info("No plugin name define\n");
+			put_message(mp, "No file defined", ML_ERROR);
+			return;
+		}
+    String_View ctrs = build_from_char(command+command_exp_size, command_size - command_exp_size);
+
+    String_View plugin_name = chop_by_delimiter(' ', &ctrs);
+
+    if (plugin_name.size == 0) {
+      log_info("No plugin name define\n");
+      put_message(mp, "No plugin define", ML_ERROR);
+      return;
+    }
+    
+    char* cstr = to_cstr(plugin_name);
+
+    Formater_Plugin* fp = NULL;
+
+    fp = get_value(&plugins, cstr);
+    
+    free(cstr);
+
+    if (fp == NULL) {
+      log_info("Plugin named "String_View_Fmt" not found\n", String_View_Arg(plugin_name));
+      return;
+    }
+    
+    String_View log_file_id = chop_by_delimiter(' ', &ctrs);
+
+    if (log_file_id.size == 0) {
+      log_info("No file id define\n");
+      put_message(mp, "No file id define", ML_ERROR);
+      return;
+    }
+    
+    for (size_t i = 0; i < log_file_id.size; i++){
+      if (isdigit(log_file_id.text[i]) == 0) {
+        log_info("The character %c is not a digit in string "String_View_Fmt"\n", log_file_id.text[i], String_View_Arg(log_file_id));
+        return ;
+      }
+    }
+
+    cstr = to_cstr(log_file_id);
+
+    int log_file_pos = (int) strtol(cstr, NULL, 10);
+    
+    free(cstr);
+   
+    Node* log_file = list_get_value_at(mp->list_file_descriptors, log_file_pos);
+    
+    if(log_file != NULL) {
+      Log_File* lf = (Log_File*) log_file->value;
+      lf->plugin_name = fp->name_version_callback(); 
+      log_info("Plugin log name: %s \n", lf->plugin_name);
+    }
+
+
+		return;
+	}
 	else if (command != NULL && strstr(command, ":loadPlugin") != NULL)
 	{
 		size_t command_size = strlen(command);
@@ -224,8 +289,8 @@ static int load_nop_plugin() {
   Formater_Plugin* plug = malloc(sizeof(Formater_Plugin));
 	
 	if (load_plugin(plug, "nop") == 0) {
-	    put_value(&plugins, "default", plug); 
-      log_info("The plugin was loaded into the hash_table\n");
+	    put_value(&plugins, plug->name_version_callback(), plug); 
+      log_info("The plugin %s was loaded into the hash_table\n", plug->name_version_callback());
   } else {
 			log_info("The default formater plugin could not be loaded");
 			exit(1);
@@ -309,7 +374,7 @@ int start_app(List *files)
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			char* result = get_value(&plugins, current_file->plugin_name)(log.line, (size_t) log.count);		
+			char* result = get_value(&plugins, current_file->plugin_name)->callback(log.line, (size_t) log.count);		
 			process_log_window(&mp.lw, result, strlen(result) + 1);
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
 			free(result);

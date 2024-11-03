@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "command_window.h"
 #include "log_window.h"

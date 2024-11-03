@@ -44,7 +44,7 @@ int put_value(Hash_Map* hash_map, const char* key, Formater_Plugin* plugin) {
 	return 1;
 }
 
-Format_Callback get_value(Hash_Map* hash_map, const char* key) {
+Formater_Plugin* get_value(Hash_Map* hash_map, const char* key) {
 	int hash_key = hash(key);
 
 	if (hash_map->values[hash_key].key == NULL) {
@@ -52,11 +52,11 @@ Format_Callback get_value(Hash_Map* hash_map, const char* key) {
 	}
 	
 	if (strcmp(hash_map->values[hash_key].key, key) == 0) {
-		return hash_map->values[hash_key].plugin->callback;
+		return hash_map->values[hash_key].plugin;
 	} else {
 		for (size_t i = 0; i < MAX_SIZE; i++) {
 			if (hash_map->values[i].key != NULL && strcmp(hash_map->values[i].key, key) == 0) {
-				return hash_map->values[i].plugin->callback;
+				return hash_map->values[i].plugin;
 			}
 		}
 	}

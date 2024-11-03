@@ -9,7 +9,7 @@ char* nop_plugin_format(const char* line, const size_t size) {
 }
 
 char* nop_plugin_name() {
-	return "Default 0.1";
+	return "default";
 } 
 
 

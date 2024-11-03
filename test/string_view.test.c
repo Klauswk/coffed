@@ -38,23 +38,27 @@ static void test_chop_by_delimiter() {
     String_View sv = build_from_char(test, strlen(test) + 1);
 
     String_View nl;
-    nl = chop_by_delimiter(' ',&sv, 0);
+    nl = chop_by_delimiter(' ',&sv);
     assert(strncmp(nl.text, "This", nl.size) == 0);
 
-    nl = chop_by_delimiter(' ', &sv, 0);
+    nl = chop_by_delimiter(' ', &sv);
     assert(strncmp(nl.text, "is", nl.size) == 0);
 
-    nl = chop_by_delimiter(' ', &sv, 0);
+    nl = chop_by_delimiter(' ', &sv);
     assert(strncmp(nl.text, "a", nl.size) == 0);
     
-    nl = chop_by_delimiter(' ', &sv, 0);
+    nl = chop_by_delimiter(' ', &sv);
     assert(strncmp(nl.text, "example", nl.size) == 0);
 
-    nl = chop_by_delimiter(' ', &sv, 0);
+    nl = chop_by_delimiter(' ', &sv);
     assert(strncmp(nl.text, "of", nl.size) == 0);
 
-    nl = chop_by_delimiter(' ', &sv, 0);
+    nl = chop_by_delimiter(' ', &sv);
     assert(strncmp(nl.text, "tests", nl.size) == 0);
+    
+    nl = chop_by_delimiter(' ', &sv);
+    printf("Size of string: %d with content %s \n", nl.size, nl.text);
+    assert(strncmp(nl.text, "", nl.size) == 0);
 }
 
 int main(int argc, char** argv) {

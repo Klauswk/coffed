@@ -242,8 +242,8 @@ static void change_filter_status(void *main_panel, char *command)
 		char message[BUFFER_SIZE] = "";
 
 		memcpy(message, command + 6, BUFFER_SIZE - 6);
-
 		put_message(mp, message, ML_INFO);
+    log_info("Adding the %s message\n", message);
 		return;
 	}
 	else if (command != NULL && strstr(command, ":RESIZE_WINDOW\t"))
@@ -340,8 +340,8 @@ int start_app(List *files)
 	{
 		start_color();
 		use_default_colors();
-		init_pair(1, COLOR_WHITE, COLOR_BLACK);
-		init_pair(2, COLOR_BLACK, COLOR_WHITE);
+		init_pair(1, COLOR_WHITE, -1);
+		init_pair(2, -1, COLOR_WHITE);
 	}
 
 	int row, col;
@@ -370,7 +370,6 @@ int start_app(List *files)
 		Log_File* current_file = (Log_File*) mp.current_file->value;
 
 		get_next_log(&log, current_file->fd);
-		
 
 		if (log.count > 0)
 		{
@@ -392,10 +391,13 @@ int start_app(List *files)
 				mp.current_file = mp.current_file->next;
 			}
 		}
-		if (handle_input_command_window(&mp.cw) && mp.mw.is_showing)
+    bool result = handle_input_command_window(&mp.cw);
+		if (mp.mw.is_showing)
 		{
-			clear_message(&mp.mw);
-			wrefresh(mp.cw.window);
+      if (result) {
+			  clear_message(&mp.mw);
+			  wrefresh(mp.cw.window);
+      }
 		}
 
 		doupdate();

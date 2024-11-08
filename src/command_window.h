@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "logger.h"
-#include "command_history.h"
 
 typedef void (*Submit_Filter_Callback)(void* mp, char* filter_command);
 
@@ -22,7 +21,6 @@ typedef struct Command_Window {
     int buffer_size;
     char* command;
 	Submit_Filter_Callback callback;
-	Command_History command_history;
 } Command_Window;
 
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void* parent, Submit_Filter_Callback callback);

@@ -125,6 +125,7 @@ static void got_command(char *line)
         strncpy(command_Window.command, line, line_size);
         command_Window.command[line_size + 1] = 0;
         command_Window.callback(command_Window.parent, command_Window.command);
+        write_history(HISTORY_LOCATION);
         free(line);
     }
 }
@@ -142,7 +143,7 @@ static void init_readline(void)
     rl_getc_function = readline_getc;
     rl_input_available_hook = readline_input_avail;
     rl_redisplay_function = readline_redisplay;
-
+    read_history(HISTORY_LOCATION);
     rl_callback_handler_install("> ", got_command);
 }
 
@@ -176,7 +177,7 @@ static void move_to_previously_tab(Command_Window *window)
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
     Command_Window window = {0};
-    WINDOW *newWindow = newwin(3, parentColumn, parentRows - 2, 0);
+    WINDOW *newWindow = newwin(3, parentColumn, parentRows - 1, 0);
     keypad(newWindow, false);
     window.window = newWindow;
 
@@ -184,14 +185,12 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
     window.parent = parent;
     window.callback = callback;
     window.columns = parentColumn - 2;
-    window.rows = parentRows - 2;
+    window.rows = parentRows - 1;
 
     window.command = malloc(sizeof(char) * buffer_size);
     window.buffer_size = buffer_size;
     window.cursor_x = 1;
     window.cursor_y = 1;
-
-    window.command_history = init_command_history(HISTORY_LOCATION);
 
     command_Window = window;
 
@@ -222,6 +221,10 @@ bool handle_input_command_window(Command_Window *window)
             log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 
             forward_to_readline(input);
+            
+            if (input == 10) {
+              return false;
+            }
 
             return true;
         }

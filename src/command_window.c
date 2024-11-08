@@ -83,14 +83,14 @@ static void resize_app_window(Command_Window *window)
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
 	Command_Window window = {0};
-	WINDOW *newWindow = newwin(3, parentColumn, parentRows - 2, 0);
+	WINDOW *newWindow = newwin(3, parentColumn, parentRows - 4, 0);
 	keypad(newWindow, TRUE);
 	window.window = newWindow;
 
 	window.input_position = 0;
 	window.parent = parent;
 	window.callback = callback;
-	window.columns = parentColumn - 2;
+	window.columns = parentColumn - 1;
 	window.rows = parentRows - 2;
 
 	window.command = malloc(sizeof(char) * buffer_size);
@@ -139,7 +139,7 @@ bool handle_input_command_window(Command_Window *window)
 		}
 
 		log_info("Typed the character with code %d and value %s\n", input, keyname(input));
-		// log_info("Typed the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with codeTyped the character with code %d and value %s \n", input, keyname(input));
+
 		if (input == KEY_BACKSPACE || input == KEY_DC || input == 127)
 		{
 			log_info("Pressed backspace \n");
@@ -195,6 +195,7 @@ bool handle_input_command_window(Command_Window *window)
 
 				add_string_to_command_input(window, previous_command, command_size);
 			}
+      return false;
 		}
 		else if (input == KEY_DOWN)
 		{
@@ -208,13 +209,14 @@ bool handle_input_command_window(Command_Window *window)
 
 				add_string_to_command_input(window, next_command, command_size);
 			}
+      return false;
 		}
 		else
 		{
 			add_to_command_input(window, input);
+		  mvwprintw(window->window, 1, 1, "%*.*s", 0, window->columns, window->command);
+      return true;
 		}
-		mvwprintw(window->window, 1, 1, "%*.*s", 0, window->columns, window->command);
-		return true;
 	}
 	return false;
 }

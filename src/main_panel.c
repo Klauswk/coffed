@@ -49,7 +49,7 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 	
 	Log_File* log_file = malloc(sizeof(Log_File));
 	log_file->fd = fd;
-	log_file->plugin_name = "default";
+	log_file->plugin_name = "nop";
 	add_to_list(mp->list_file_descriptors, log_file);
 
 	return true;
@@ -197,12 +197,13 @@ static void change_filter_status(void *main_panel, char *command)
     
     free(cstr);
    
-    Node* log_file = list_get_value_at(mp->list_file_descriptors, log_file_pos);
+    Log_File* log_file = (Log_File*) list_get_value_at(mp->list_file_descriptors, log_file_pos);
     
     if(log_file != NULL) {
-      Log_File* lf = (Log_File*) log_file->value;
-      lf->plugin_name = fp->name_version_callback(); 
-      log_info("Plugin log name: %s \n", lf->plugin_name);
+      log_file->plugin_name = fp->name_version_callback(); 
+      log_info("Plugin %s set to log %d \n", log_file->plugin_name, log_file_pos);
+    } else {
+      log_info("Log file in position %d not found\n", log_file_pos);
     }
 
 

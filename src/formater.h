@@ -15,7 +15,7 @@ typedef struct Formater_Plugin {
 typedef struct Log_File
 {
 	FILE* fd;	
-	const char* plugin_name;
+	char* plugin_name;
 } Log_File;
 
 

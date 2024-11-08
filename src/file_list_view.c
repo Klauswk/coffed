@@ -34,10 +34,10 @@ void show_file_list(File_List_View* file_list_view, List* list_of_files)
     wclear(file_list_view->window);
     box(file_list_view->border_win, 0, 0);
 
-    FOR_EACH_IN_LIST(FILE*, el, list_of_files, {
+    FOR_EACH_IN_LIST(Log_File*, el, list_of_files, {
         char proc_link_path[4096];
         char filename[4096];
-        int file_descriptor = fileno(el);
+        int file_descriptor = fileno(el->fd);
         
         snprintf(proc_link_path, 4096, "/proc/self/fd/%d", file_descriptor);
         ssize_t byte_count = readlink(proc_link_path, filename, 4096);
@@ -46,7 +46,7 @@ void show_file_list(File_List_View* file_list_view, List* list_of_files)
             mvwprintw(file_list_view->window, line++, 1, "%d: Couldnt read FD: %d", line - 1, file_descriptor);
         } else {
             filename[byte_count] = '\0';
-            mvwprintw(file_list_view->window, line++, 1, "%d: %s", line - 1, filename);
+            mvwprintw(file_list_view->window, line++, 1, "%d: %s - Formater: %s", line - 1, filename, el->plugin_name);
         }
     });
 }

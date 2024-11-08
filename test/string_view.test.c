@@ -31,13 +31,40 @@ static void test_chop_by_line() {
     assert(strncmp(nl.text, "s", nl.size) == 0);
 }
 
+static void test_chop_by_delimiter() {
+
+    char* test = "This is a example of tests";
+
+    String_View sv = build_from_char(test, strlen(test) + 1);
+
+    String_View nl;
+    nl = chop_by_delimiter(' ',&sv);
+    assert(strncmp(nl.text, "This", nl.size) == 0);
+
+    nl = chop_by_delimiter(' ', &sv);
+    assert(strncmp(nl.text, "is", nl.size) == 0);
+
+    nl = chop_by_delimiter(' ', &sv);
+    assert(strncmp(nl.text, "a", nl.size) == 0);
+    
+    nl = chop_by_delimiter(' ', &sv);
+    assert(strncmp(nl.text, "example", nl.size) == 0);
+
+    nl = chop_by_delimiter(' ', &sv);
+    assert(strncmp(nl.text, "of", nl.size) == 0);
+
+    nl = chop_by_delimiter(' ', &sv);
+    assert(strncmp(nl.text, "tests", nl.size) == 0);
+    
+    nl = chop_by_delimiter(' ', &sv);
+    printf("Size of string: %d with content %s \n", nl.size, nl.text);
+    assert(strncmp(nl.text, "", nl.size) == 0);
+}
+
 int main(int argc, char** argv) {
 
     RUN_FILE(argc, argv, {
         RUN_TEST(test_chop_by_line);
+        RUN_TEST(test_chop_by_delimiter);
     });
-
-    for(int i = 0 ; i < counter ; i++) {
-        printf(String_View_Fmt"\n", String_View_Arg(svs[i]));
-    }
 }

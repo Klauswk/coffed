@@ -13,13 +13,11 @@
 #include <wctype.h>
 #include <time.h>
 #include <math.h>
+#include <sys/param.h>
 
 #define _XOPEN_SOURCE 700
 
-#define max(a, b) \
-    ({ typeof(a) _a = a;    \
-     typeof(b) _b = b;    \
-     _a > _b ? _a : _b; })
+int wcwidth(wchar_t c);
 
 static int input;
 
@@ -62,7 +60,7 @@ static size_t strnwidth(const char *s, size_t n, size_t offset)
         }
         else
         {
-            width += iswcntrl(wc) ? 2 : max(0, wcwidth(wc));
+            width += iswcntrl(wc) ? 2 : MAX(0, wcwidth(wc));
         }
     }
 
@@ -123,7 +121,8 @@ static void got_command(char *line)
         size_t cursor_col = prompt_width +
                             strnwidth(rl_line_buffer, rl_point, prompt_width);
         size_t line_size = cursor_col - prompt_width;
-        memcpy(command_Window.command, line, line_size);
+				memset(command_Window.command, 0, command_Window.buffer_size); 
+        strncpy(command_Window.command, line, line_size);
         command_Window.command[line_size + 1] = 0;
         command_Window.callback(command_Window.parent, command_Window.command);
         free(line);
@@ -220,7 +219,7 @@ bool handle_input_command_window(Command_Window *window)
 
         if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')
         {
-            log_info("Typed the character with code %d and value %s \n", input, keyname(input));
+            log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 
             forward_to_readline(input);
 

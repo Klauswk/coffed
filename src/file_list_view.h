@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include "list.h"
+#include "formater.h"
 
 typedef struct {
 

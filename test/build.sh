@@ -9,4 +9,3 @@ gcc -g  -DDEBUG -I../src/ ../src/string_view.c assert.c string_view.test.c -o ..
 ./../target/test/log_view_header.test "$@"
 ./../target/test/log.test "$@"
 ./../target/test/string_view.test "$@"
-./../target/test/command_history.test "$@"

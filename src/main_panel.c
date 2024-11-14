@@ -1,5 +1,7 @@
 #include "main_panel.h"
 
+bool running = true;
+
 static void free_node(Node *node)
 {
 	free(node->value);
@@ -209,6 +211,53 @@ static void change_filter_status(void *main_panel, char *command)
 
 		return;
 	}
+	else if (command != NULL && strstr(command, ":unloadPlugin") != NULL)
+	{
+		size_t command_size = strlen(command);
+		if (command_size < 12)
+		{
+			log_info("Got into no file defined\n");
+			put_message(mp, "No file defined", ML_ERROR);
+			return;
+		}
+		char file_path[BUFFER_SIZE] = {0};
+		strncpy(file_path,command + 14, BUFFER_SIZE);
+		
+		log_info("Unloading plugin: %s from command: %s\n", file_path, command);
+    
+    if (strstr(file_path, "nop") != NULL) {
+      log_info("You can't remove the nop formatter\n");
+      return;
+    }
+
+    Formater_Plugin* fp = NULL;
+
+    fp = get_value(&plugins, file_path);
+	  
+    if (fp == NULL) {
+      log_info("The plugin %s was not found\n", file_path);
+
+      return;
+    }
+    
+    Formater_Plugin* nop = get_value(&plugins, "nop");
+
+    if (nop == NULL) {
+       log_info("It was not possible to load the nop formatter, something went wrong\n");
+       return;
+    }
+
+    FOR_EACH_IN_LIST(Log_File*, log_file, mp->list_file_descriptors, {
+        if (strstr(file_path, log_file->plugin_name) != NULL) {
+            log_file->plugin_name = "nop";
+        }
+    });
+   
+    delete_value(&plugins, file_path); 
+    log_info("The plugin was unloaded from the hash_table\n");
+	
+		return;
+	}
 	else if (command != NULL && strstr(command, ":loadPlugin") != NULL)
 	{
 		size_t command_size = strlen(command);
@@ -281,7 +330,10 @@ static void change_filter_status(void *main_panel, char *command)
 			hide_file_list_panel(mp);
 		}
 		return;
-	}
+	} else if( command != NULL && strstr(command, ":quit") != NULL || strstr(command, ":q") != NULL) {
+      running = false;
+      return;
+  }
 
 	set_filter_log_window(&mp->lw, command);
 }
@@ -297,6 +349,7 @@ static int load_nop_plugin() {
 			exit(1);
 	}
 }
+
 
 int start_app(List *files)
 {
@@ -363,7 +416,7 @@ int start_app(List *files)
 	
 	load_nop_plugin();
 
-	while (1)
+	while (running)
 	{
 		update_panels();
 		

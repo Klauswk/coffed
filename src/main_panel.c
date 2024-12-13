@@ -47,7 +47,7 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		}
 	});
 
-	fseek(fd, 0, SEEK_END);
+	fseek(fd, 0, SEEK_SET);
 	
 	Log_File* log_file = malloc(sizeof(Log_File));
 	log_file->fd = fd;

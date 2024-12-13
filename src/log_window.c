@@ -22,6 +22,8 @@ Log_Window create_log_window(int parentRows, int parentColumn)
     window.window = newWindow;
     window.screen_offset = 0;
     window.viewport = malloc(sizeof(Viewport));
+    window.viewport->start = 0;
+    window.viewport->end = parentRows;
 
     window.lines_to_display = malloc(sizeof(List));
     init_list(window.lines_to_display, MAX_LIST_SIZE, free_sv_node);
@@ -64,13 +66,13 @@ static void refresh_log_window(Log_Window *window)
 
 static void add_line_to_log(Log_Window *window, String_View *sv)
 {
-    mvwprintw(window->window, window->line_cursor, 1, String_View_Fmt, String_View_Arg(*sv));
-    size_t clear_to_end_of_screen = sv->size;
-
-    for (size_t i = clear_to_end_of_screen; i < window->columns; i++)
+    for (size_t i = 0; i < window->columns; i++)
     {
         mvwprintw(window->window, window->line_cursor, i, " ");
     }
+
+    mvwprintw(window->window, window->line_cursor, 0, String_View_Fmt, String_View_Arg(*sv));
+    size_t clear_to_end_of_screen = sv->size;
 }
 
 static void process_list_to_lines(Log_Window *window, List *list)
@@ -154,6 +156,36 @@ static void scroll_up(Log_Window *window)
     }
 }
 
+static void page_up(Log_Window *window)
+{
+  int page_size = window->rows;
+
+  while(page_size > 0 && (window->lines_to_display->size - window->screen_offset) > window->rows) {
+    page_size--;
+    window->screen_offset++;
+  }
+  //window->viewport->start = window->lines_to_display->size - window->rows;
+  //window->viewport->end = window->lines_to_display->size;
+  redraw_log(window, window->viewport, window->screen_offset);
+  refresh_log_window(window);
+}
+
+static void page_down(Log_Window *window)
+{
+  if (window->screen_offset > 0) {
+    int page_size = window->rows;
+
+    while(page_size > 0 && window->screen_offset > 0) {
+      page_size--;
+      window->screen_offset--;
+    }
+    //window->viewport->start = window->lines_to_display->size - window->rows;
+    //window->viewport->end = window->lines_to_display->size;
+    redraw_log(window, window->viewport, window->screen_offset);
+    refresh_log_window(window);
+  }
+}
+
 static void scroll_down(Log_Window *window)
 {
     if (window->screen_offset > 0)
@@ -181,6 +213,11 @@ static void close_tab(Log_Window *window)
         remove_value_from_list(window->log_view_list, window->lv_current);
         window->lv_current = window->log_view_list->tail->value;
         draw_header_view(window->log_view_header);
+
+        List *cl = get_current_list(window);
+        clear_list(window->lines_to_display);
+        process_list_to_lines(window, cl);
+        wclear(window->window);
 
         window->screen_offset = 0;
         window->viewport->start = window->lines_to_display->size - window->rows;
@@ -416,25 +453,25 @@ void process_log_window(Log_Window *window, char *line, int line_size)
             number_of_lines++;
         }
 
-        if (window->screen_offset == 0)
+        if (window->screen_offset > 0) {
+          window->screen_offset += number_of_lines;  
+        }
+        if (window->lines_to_display->size >= (window->rows))
         {
-            if (window->lines_to_display->size >= (window->rows))
-            {
-                window->viewport->start = window->lines_to_display->size - window->rows;
-                window->viewport->end = window->lines_to_display->size;
-                redraw_log(window, window->viewport, window->screen_offset);
-                refresh_log_window(window);
-            }
-            else
-            {
-                for (size_t i = window->lines_to_display->size - number_of_lines; i < window->lines_to_display->size; i++)
-                {
-                    increase_line_counter_by(window, 1);
-                    String_View *list_sv = list_get_value_at(window->lines_to_display, i);
-                    add_line_to_log(window, list_sv);
-                }
-                refresh_log_window(window);
-            }
+          window->viewport->start = window->lines_to_display->size - window->rows;
+          window->viewport->end = window->lines_to_display->size;
+          redraw_log(window, window->viewport, window->screen_offset);
+          refresh_log_window(window);
+        }
+        else
+        {
+          for (size_t i = window->lines_to_display->size - number_of_lines; i < window->lines_to_display->size; i++)
+          {
+            increase_line_counter_by(window, 1);
+            String_View *list_sv = list_get_value_at(window->lines_to_display, i);
+            add_line_to_log(window, list_sv);
+          }
+          refresh_log_window(window);
         }
     }
 }
@@ -453,6 +490,16 @@ void set_filter_log_window(Log_Window *window, char *command)
             else if (strstr(command, ":GO_DOWN\t") != NULL)
             {
                 scroll_down(window);
+                return;
+            }
+            else if (strstr(command, ":PAGE_DOWN\t") != NULL)
+            {
+                page_down(window);
+                return;
+            }
+            else if (strstr(command, ":PAGE_UP\t") != NULL)
+            {
+                page_up(window);
                 return;
             }
             else if (strstr(command, ":CLOSE_CURRENT_TAB\t") != NULL)

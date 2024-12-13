@@ -147,6 +147,16 @@ static void init_readline(void)
     rl_callback_handler_install("> ", got_command);
 }
 
+static void page_down(Command_Window *window)
+{
+  window->callback(window->parent, ":PAGE_DOWN\t");  
+}
+
+static void page_up(Command_Window *window)
+{
+  window->callback(window->parent, ":PAGE_UP\t");  
+}
+
 static void deinit_readline(void)
 {
     rl_callback_handler_remove();
@@ -207,6 +217,7 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
 bool handle_input_command_window(Command_Window *window)
 {
     int input = wgetch(window->window);
+    
 
     if (input != -1)
     {
@@ -214,6 +225,12 @@ bool handle_input_command_window(Command_Window *window)
         {
             resize_app_window(window);
             return false;
+        }
+        
+        if (input == 27 && (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')) {
+          log_info("Typed ESC, clearing the input\n");
+          forward_to_readline(21);
+          return true;
         }
 
         if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')
@@ -249,6 +266,16 @@ bool handle_input_command_window(Command_Window *window)
         {
             close_tab(window);
             return false;
+        }
+        else if (input == ('f' & 0x1F))
+        {
+          log_info("Page Down\n");
+          page_down(window);
+        }
+        else if (input == ('b' & 0x1F))
+        {
+          log_info("Page Up\n");
+          page_up(window);
         }
         else if (input == 'K')
         {

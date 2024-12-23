@@ -184,6 +184,14 @@ static void move_to_previously_tab(Command_Window *window)
     window->callback(window->parent, ":MOVE_TO_PREVIOUSLY_TAB\t");
 }
 
+static void move_to_top(Command_Window *window) {
+  window->callback(window->parent, ":MOVE_TO_TOP\t");
+}
+
+static void move_to_bottom(Command_Window *window) {
+  window->callback(window->parent, ":MOVE_TO_BOTTOM\t");
+}
+
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
     Command_Window window = {0};
@@ -292,6 +300,18 @@ bool handle_input_command_window(Command_Window *window)
         else if (input == 9)
         {
             window->callback(window->parent, ":SHOW_FILE_LIST\t");
+            return false;
+        }
+        else if (input == 'g')
+        {
+            log_info("Top of the screen\n");
+            move_to_top(window);
+            return false;
+        }
+        else if (input == 'G')
+        {
+            log_info("Bottom of the screen\n");
+            move_to_bottom(window);
             return false;
         }
 

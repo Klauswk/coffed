@@ -317,6 +317,24 @@ static void move_to_previously_tab(Log_Window *window)
     refresh_log_window(window);
 }
 
+static void move_to_top(Log_Window *window)
+{
+  window->screen_offset = window->lines_to_display->size - window->rows;
+  window->viewport->start = window->lines_to_display->size - window->rows;
+  window->viewport->end = window->lines_to_display->size;
+  redraw_log(window, window->viewport, window->screen_offset);
+  refresh_log_window(window);
+}
+
+static void move_to_bottom(Log_Window *window)
+{
+  window->screen_offset = 0;
+  window->viewport->start = window->lines_to_display->size - window->rows;
+  window->viewport->end = window->lines_to_display->size;
+  redraw_log(window, window->viewport, window->screen_offset);
+  refresh_log_window(window);
+}
+
 static void process_filter(Log_Window *window, char *command)
 {
     window->screen_offset = 0;
@@ -515,6 +533,16 @@ void set_filter_log_window(Log_Window *window, char *command)
             else if (strstr(command, ":MOVE_TO_PREVIOUSLY_TAB\t") != NULL)
             {
                 move_to_previously_tab(window);
+                return;
+            }
+            else if (strstr(command, ":MOVE_TO_TOP\t") != NULL)
+            {
+                move_to_top(window);
+                return;
+            }
+            else if (strstr(command, ":MOVE_TO_BOTTOM\t") != NULL)
+            {
+                move_to_bottom(window);
                 return;
             }
             else if (strstr(command, ":dump ") != NULL)

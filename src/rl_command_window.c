@@ -235,13 +235,13 @@ bool handle_input_command_window(Command_Window *window)
             return false;
         }
         
-        if (input == 27 && (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')) {
+        if (input == 29 && (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '&')) {
           log_info("Typed ESC, clearing the input\n");
           forward_to_readline(21);
           return true;
         }
 
-        if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')
+        if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '&')
         {
             log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 
@@ -315,7 +315,7 @@ bool handle_input_command_window(Command_Window *window)
             return false;
         }
 
-        if (input == ':' || input == '/')
+        if (input == ':' || input == '&')
         {
             forward_to_readline(input);
         }

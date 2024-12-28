@@ -553,7 +553,7 @@ void set_filter_log_window(Log_Window *window, char *command)
                 return;
             }
         }
-        else if (command[0] == '/')
+        else if (command[0] == '&')
         {
             process_filter(window, command);
         }

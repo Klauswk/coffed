@@ -81,11 +81,11 @@ static void add_line_to_log(Log_Window *window, String_View sv)
           do {
             size_t result_size = result - sv.text;
 
-            String_View sv1 = get_next_line(&sv, result_size);
+            String_View sv1 = chop_by_size(&sv, result_size);
             mvwprintw(window->window, window->line_cursor, 0, String_View_Fmt, String_View_Arg(sv1));
             acc = acc + result_size;
 
-            String_View sv2 = get_next_line(&sv,term_size); 
+            String_View sv2 = chop_by_size(&sv,term_size); 
             wattron(window->window, COLOR_PAIR(5));
             mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
             wattroff(window->window, COLOR_PAIR(5));
@@ -105,7 +105,7 @@ static void process_list_to_lines(Log_Window *window, List *list)
 
     FOR_EACH_IN_LIST(char *, line, list, {
         String_View sv = build_from_char(line, strlen(line) + 1);
-        String_View next_line = get_next_line(&sv, window->columns);
+        String_View next_line = chop_by_size(&sv, window->columns);
         int number_of_lines = 0;
         while (next_line.size > 0)
         {
@@ -117,7 +117,7 @@ static void process_list_to_lines(Log_Window *window, List *list)
 
             add_to_list(window->lines_to_display, new_line);
 
-            next_line = get_next_line(&sv, window->columns);
+            next_line = chop_by_size(&sv, window->columns);
             number_of_lines++;
         }
     });
@@ -465,7 +465,7 @@ void process_log_window(Log_Window *window, char *line, int line_size)
     if (added)
     {
         String_View sv = build_from_char(line, line_size);
-        String_View next_line = get_next_line(&sv, window->columns);
+        String_View next_line = chop_by_size(&sv, window->columns);
         int number_of_lines = 0;
         while (next_line.size > 0)
         {
@@ -477,7 +477,7 @@ void process_log_window(Log_Window *window, char *line, int line_size)
 
             add_to_list(window->lines_to_display, new_line);
 
-            next_line = get_next_line(&sv, window->columns);
+            next_line = chop_by_size(&sv, window->columns);
             number_of_lines++;
         }
 

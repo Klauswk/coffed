@@ -65,5 +65,7 @@ char* to_cstr(String_View sv) {
   return cstr;
 }
 
-
+char* find_text_in_sv(const String_View sv, const char* needle) {
+  return strstr(sv.text, needle);
+}
 

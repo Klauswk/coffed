@@ -17,13 +17,14 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 {
     Log_Window window = {0};
     WINDOW *newWindow = newwin(parentRows - 3, parentColumn, 1, 0);
-
+    init_pair(5, COLOR_CYAN, COLOR_BLACK); 
     window.line_cursor = -1;
     window.window = newWindow;
     window.screen_offset = 0;
     window.viewport = malloc(sizeof(Viewport));
     window.viewport->start = 0;
     window.viewport->end = parentRows;
+    window.search_term = NULL;
 
     window.lines_to_display = malloc(sizeof(List));
     init_list(window.lines_to_display, MAX_LIST_SIZE, free_sv_node);
@@ -50,7 +51,6 @@ Log_Window create_log_window(int parentRows, int parentColumn)
 
 static void clear_log_window(Log_Window *window)
 {
-    // wclear(window->window);
     window->line_cursor = -1;
 }
 
@@ -59,20 +59,45 @@ static void increase_line_counter_by(Log_Window *window, int value)
     window->line_cursor += value;
 }
 
-static void refresh_log_window(Log_Window *window)
+static void add_line_to_log(Log_Window *window, String_View sv)
 {
-    // wrefresh(window->window);
-}
 
-static void add_line_to_log(Log_Window *window, String_View *sv)
-{
     for (size_t i = 0; i < window->columns; i++)
     {
-        mvwprintw(window->window, window->line_cursor, i, " ");
+      wattrset(window->window, 0);
+      mvwprintw(window->window, window->line_cursor, i, " ");
     }
+    
+    size_t acc = 0;
 
-    mvwprintw(window->window, window->line_cursor, 0, String_View_Fmt, String_View_Arg(*sv));
-    size_t clear_to_end_of_screen = sv->size;
+    if (window->search_term != NULL) {
+      size_t term_size = strlen(window->search_term);
+
+      if (term_size > 0) {
+        char* result = find_text_in_sv(sv, window->search_term);
+
+        if (result != NULL) {
+
+          do {
+            size_t result_size = result - sv.text;
+
+            String_View sv1 = get_next_line(&sv, result_size);
+            mvwprintw(window->window, window->line_cursor, 0, String_View_Fmt, String_View_Arg(sv1));
+            acc = acc + result_size;
+
+            String_View sv2 = get_next_line(&sv,term_size); 
+            wattron(window->window, COLOR_PAIR(5));
+            mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
+            wattroff(window->window, COLOR_PAIR(5));
+            acc = acc + sv2.size;
+
+            result = find_text_in_sv(sv, window->search_term);
+          } while (result != NULL);
+
+        }
+      }
+    }
+    mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv));
 }
 
 static void process_list_to_lines(Log_Window *window, List *list)
@@ -119,7 +144,7 @@ static void redraw_log(Log_Window *window, Viewport *vp, int screen_offset)
     {
         increase_line_counter_by(window, 1);
         String_View *sv = list_get_value_at(window->lines_to_display, i);
-        add_line_to_log(window, sv);
+        add_line_to_log(window, *sv);
     }
 }
 
@@ -152,7 +177,6 @@ static void scroll_up(Log_Window *window)
     {
         window->screen_offset++;
         redraw_log(window, window->viewport, window->screen_offset);
-        refresh_log_window(window);
     }
 }
 
@@ -164,10 +188,7 @@ static void page_up(Log_Window *window)
     page_size--;
     window->screen_offset++;
   }
-  //window->viewport->start = window->lines_to_display->size - window->rows;
-  //window->viewport->end = window->lines_to_display->size;
   redraw_log(window, window->viewport, window->screen_offset);
-  refresh_log_window(window);
 }
 
 static void page_down(Log_Window *window)
@@ -179,10 +200,7 @@ static void page_down(Log_Window *window)
       page_size--;
       window->screen_offset--;
     }
-    //window->viewport->start = window->lines_to_display->size - window->rows;
-    //window->viewport->end = window->lines_to_display->size;
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
   }
 }
 
@@ -198,7 +216,6 @@ static void scroll_down(Log_Window *window)
         window->viewport->end = window->lines_to_display->size;
     }
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
 }
 
 static void close_tab(Log_Window *window)
@@ -223,7 +240,6 @@ static void close_tab(Log_Window *window)
         window->viewport->start = window->lines_to_display->size - window->rows;
         window->viewport->end = window->lines_to_display->size;
         redraw_log(window, window->viewport, window->screen_offset);
-        refresh_log_window(window);
     }
 }
 
@@ -269,7 +285,6 @@ static void move_to_next_tab(Log_Window *window)
     window->viewport->start = window->lines_to_display->size - window->rows;
     window->viewport->end = window->lines_to_display->size;
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
 }
 
 static void move_to_previously_tab(Log_Window *window)
@@ -314,7 +329,6 @@ static void move_to_previously_tab(Log_Window *window)
     window->viewport->start = window->lines_to_display->size - window->rows;
     window->viewport->end = window->lines_to_display->size;
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
 }
 
 static void move_to_top(Log_Window *window)
@@ -323,7 +337,6 @@ static void move_to_top(Log_Window *window)
   window->viewport->start = window->lines_to_display->size - window->rows;
   window->viewport->end = window->lines_to_display->size;
   redraw_log(window, window->viewport, window->screen_offset);
-  refresh_log_window(window);
 }
 
 static void move_to_bottom(Log_Window *window)
@@ -332,7 +345,6 @@ static void move_to_bottom(Log_Window *window)
   window->viewport->start = window->lines_to_display->size - window->rows;
   window->viewport->end = window->lines_to_display->size;
   redraw_log(window, window->viewport, window->screen_offset);
-  refresh_log_window(window);
 }
 
 static void process_filter(Log_Window *window, char *command)
@@ -384,7 +396,6 @@ static void process_filter(Log_Window *window, char *command)
     window->viewport->start = window->lines_to_display->size - window->rows;
     window->viewport->end = window->lines_to_display->size;
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
 }
 
 static void dump_to_file(Log_Window *window, char *file)
@@ -427,7 +438,6 @@ void resize_log_window(Log_Window *window, int parentRows, int parentColumn)
     window->viewport->end = window->lines_to_display->size;
 
     redraw_log(window, window->viewport, window->screen_offset);
-    refresh_log_window(window);
 }
 
 void process_log_window(Log_Window *window, char *line, int line_size)
@@ -479,7 +489,6 @@ void process_log_window(Log_Window *window, char *line, int line_size)
           window->viewport->start = window->lines_to_display->size - window->rows;
           window->viewport->end = window->lines_to_display->size;
           redraw_log(window, window->viewport, window->screen_offset);
-          refresh_log_window(window);
         }
         else
         {
@@ -487,9 +496,8 @@ void process_log_window(Log_Window *window, char *line, int line_size)
           {
             increase_line_counter_by(window, 1);
             String_View *list_sv = list_get_value_at(window->lines_to_display, i);
-            add_line_to_log(window, list_sv);
+            add_line_to_log(window, *list_sv);
           }
-          refresh_log_window(window);
         }
     }
 }
@@ -557,9 +565,26 @@ void set_filter_log_window(Log_Window *window, char *command)
         {
             process_filter(window, command);
         }
+        else if (command[0] == '/')
+        {
+          if (window->search_term != NULL) {
+            free(window->search_term);
+            window->search_term = NULL;
+          }
+          if (strlen(command) > 1) {
+            command++;
+            window->search_term = calloc(strlen(command), sizeof(char));
+            memcpy(window->search_term, command, strlen(command));
+            log_info("New search term is %s\n", window->search_term);
+          }
+          window->viewport->start = window->lines_to_display->size - window->rows;
+          window->viewport->end = window->lines_to_display->size;
+          redraw_log(window, window->viewport, window->screen_offset);
+        }
         else
         {
             log_info("Couldnt process the command: %s\n", command);
         }
     }
 }
+

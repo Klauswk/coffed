@@ -30,15 +30,15 @@ bool get_next_log(Log* log, FILE* file)
     {
         nbytes = fread(buf, 1, BUFFER_SIZE, file);
         
-        //printf("Bytes read: %zu\n", nbytes);
-        //printf("Buffer: %.*s\n",nbytes, buf);
-
-
-        if (nbytes == -1 || ferror(file))
+        if (ferror(file))
         {
             log_info("An error occour while reading the file\n");
 
             return false;
+        }
+
+        if (feof(file) != 0) {
+           clearerr(file);
         }
 
         if(nbytes == 0) {
@@ -58,7 +58,7 @@ bool get_next_log(Log* log, FILE* file)
             }
 
             for(int i = 0; i < nbytes; i++) {
-                if (buf[i] == '\n') {
+                if (buf[i] == '\n' || buf[i] == '\r' || buf[i] == EOF) {
                     log->line[log->count++] = '\0';
                     fseek( file, current_pos + log->count, SEEK_SET );
                     return true;

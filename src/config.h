@@ -1,7 +1,7 @@
 #ifndef COFFED_CONFIG_H
 #define COFFED_CONFIG_H
 
-#define BUFFER_SIZE 1024 * 1024
+#define BUFFER_SIZE 1024
 
 #define LOG_TYPE "w"
 

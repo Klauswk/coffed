@@ -88,7 +88,6 @@ static void add_line_to_log(Log_Window *window, String_View sv)
 
             String_View sv2 = chop_by_size(&sv,term_size); 
             if (window->marked_term_in_line.size > 0 && (sv2.text == window->marked_term_in_line.text)) {
-              log_info("Found a marker at "String_View_Fmt"\n", String_View_Arg(sv2));
               wattron(window->window, COLOR_PAIR(6));
               mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
               wattroff(window->window, COLOR_PAIR(6));
@@ -393,6 +392,7 @@ static void go_to_next_occourence(Log_Window *window) {
       window->marked_term_in_line.size = 0;
     }
   }
+  redraw_log(window, window->viewport, window->screen_offset);
 }
 
 static void go_to_previous_occourence(Log_Window *window) {
@@ -410,7 +410,7 @@ static void go_to_previous_occourence(Log_Window *window) {
           found_index = index;
           break;
         }
-        n = n->next;                                    
+        n = n->next;
       }
     }
 
@@ -433,6 +433,7 @@ static void go_to_previous_occourence(Log_Window *window) {
     }
   }
 
+  redraw_log(window, window->viewport, window->screen_offset);
 }
 
 static void process_filter(Log_Window *window, char *command)

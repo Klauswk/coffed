@@ -44,6 +44,8 @@ void remove_value_from_list(List *list, void *value);
 
 Node *find_node_on_value(List *list, void *value);
 
+Node *list_get_node_at(List *list, size_t position);
+
 void *list_get_value_at(List *list, size_t position);
 
 #endif

@@ -30,6 +30,8 @@ typedef struct Log_Window {
   Log_View* lv_current;
   Log_View_Header* log_view_header;
   char* search_term;
+  //Pointer to the current marked term, since we could have multiple in the same line, we need to mark both the line and the current word.
+  String_View marked_term_in_line;
 } Log_Window;
 
 Log_Window create_log_window(int parentRows, int parentColumn);

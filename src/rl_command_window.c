@@ -191,6 +191,14 @@ static void move_to_bottom(Command_Window *window) {
   window->callback(window->parent, ":MOVE_TO_BOTTOM\t");
 }
 
+static void move_to_next_occourence(Command_Window *window) {
+  window->callback(window->parent, ":NEXT_OCCURRENCE\t");
+}
+
+static void move_to_previous_occourence(Command_Window *window) {
+  window->callback(window->parent, ":PREV_OCCURRENCE\t");
+}
+
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
     Command_Window window = {0};
@@ -309,6 +317,12 @@ bool handle_input_command_window(Command_Window *window)
             log_info("Bottom of the screen\n");
             move_to_bottom(window);
             return false;
+        } else if (input == 'n') {
+          move_to_next_occourence(window);
+          return false;
+        } else if (input == 'N') {
+          move_to_previous_occourence(window);
+          return false;
         }
 
         if (input == ':' || input == '&' || input == '/')

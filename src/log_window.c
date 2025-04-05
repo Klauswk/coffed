@@ -18,6 +18,7 @@ Log_Window create_log_window(int parentRows, int parentColumn)
     Log_Window window = {0};
     WINDOW *newWindow = newwin(parentRows - 3, parentColumn, 1, 0);
     init_pair(5, COLOR_CYAN, COLOR_BLACK); 
+    init_pair(6, COLOR_CYAN, COLOR_YELLOW); 
     window.line_cursor = -1;
     window.window = newWindow;
     window.screen_offset = 0;
@@ -86,11 +87,18 @@ static void add_line_to_log(Log_Window *window, String_View sv)
             acc = acc + result_size;
 
             String_View sv2 = chop_by_size(&sv,term_size); 
-            wattron(window->window, COLOR_PAIR(5));
-            mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
-            wattroff(window->window, COLOR_PAIR(5));
-            acc = acc + sv2.size;
-
+            if (window->marked_term_in_line.size > 0 && (sv2.text == window->marked_term_in_line.text)) {
+              log_info("Found a marker at "String_View_Fmt"\n", String_View_Arg(sv2));
+              wattron(window->window, COLOR_PAIR(6));
+              mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
+              wattroff(window->window, COLOR_PAIR(6));
+              acc = acc + sv2.size;
+            } else {
+              wattron(window->window, COLOR_PAIR(5));
+              mvwprintw(window->window, window->line_cursor, acc, String_View_Fmt, String_View_Arg(sv2));
+              wattroff(window->window, COLOR_PAIR(5));
+              acc = acc + sv2.size;
+            }
             result = find_text_in_sv(sv, window->search_term);
           } while (result != NULL);
 
@@ -347,6 +355,86 @@ static void move_to_bottom(Log_Window *window)
   redraw_log(window, window->viewport, window->screen_offset);
 }
 
+static void go_to_next_occourence(Log_Window *window) {
+  if (window->search_term && *window->search_term) {
+    int found_index = 0;
+
+    Node *n = window->lines_to_display->head;                              
+    
+    // First we need to find the current occourence
+    if (window->marked_term_in_line.text != NULL) {
+      for (size_t index = 0; index < window->lines_to_display->size; index++) 
+      {                                                   
+        String_View* e = n->value;                        
+        char* substring = strstr(e->text, window->search_term); 
+        if (substring != NULL && window->marked_term_in_line.text == substring) {
+          found_index = index;
+          break;
+        }
+        n = n->next;                                    
+      }
+    }
+
+    for (size_t index = found_index; index < window->lines_to_display->size; index++) 
+    {                                                   
+      String_View* e = n->value;                        
+      char* substring = strstr(e->text, window->search_term); 
+      if (substring != NULL && window->marked_term_in_line.text != substring) {
+        found_index = 1;
+        window->marked_term_in_line.text = substring;
+        window->marked_term_in_line.size = strlen(window->search_term);
+        break;
+      }
+      n = n->next;                                    
+    }
+
+    if (!found_index) {
+      window->marked_term_in_line.text = NULL;
+      window->marked_term_in_line.size = 0;
+    }
+  }
+}
+
+static void go_to_previous_occourence(Log_Window *window) {
+  if (window->search_term && *window->search_term) {
+    int found_index = 0;
+
+    Node *n = window->lines_to_display->head;                              
+    // First we need to find the current occourence
+    if (window->marked_term_in_line.text != NULL) {
+      for (size_t index = 0; index < window->lines_to_display->size; index++) 
+      {                                                   
+        String_View* e = n->value;                        
+        char* substring = strstr(e->text, window->search_term); 
+        if (substring != NULL && window->marked_term_in_line.text == substring) {
+          found_index = index;
+          break;
+        }
+        n = n->next;                                    
+      }
+    }
+
+    for (size_t index = found_index; index > 0; index--) 
+    {                                                   
+      String_View* e = n->value;                        
+      char* substring = strstr(e->text, window->search_term); 
+      if (substring != NULL && window->marked_term_in_line.text != substring) {
+        found_index = 1;
+        window->marked_term_in_line.text = substring;
+        window->marked_term_in_line.size = strlen(window->search_term);
+        break;
+      }
+      n = n->previous;                                    
+    }
+
+    if (!found_index) {
+      window->marked_term_in_line.text = NULL;
+      window->marked_term_in_line.size = 0;
+    }
+  }
+
+}
+
 static void process_filter(Log_Window *window, char *command)
 {
     window->screen_offset = 0;
@@ -559,6 +647,10 @@ void set_filter_log_window(Log_Window *window, char *command)
                 memcpy(file_path, command + 6, BUFFER_SIZE - 6);
                 dump_to_file(window, file_path);
                 return;
+            } else if (strstr(command, ":NEXT_OCCURRENCE\t") != NULL && window->search_term != NULL) {
+             go_to_next_occourence(window);   
+            } else if (strstr(command, ":PREV_OCCURRENCE\t") != NULL && window->search_term != NULL) {
+             go_to_previous_occourence(window); 
             }
         }
         else if (command[0] == '&')
@@ -576,6 +668,8 @@ void set_filter_log_window(Log_Window *window, char *command)
             window->search_term = calloc(strlen(command), sizeof(char));
             memcpy(window->search_term, command, strlen(command));
             log_info("New search term is %s\n", window->search_term);
+            
+            go_to_next_occourence(window);
           }
           window->viewport->start = window->lines_to_display->size - window->rows;
           window->viewport->end = window->lines_to_display->size;

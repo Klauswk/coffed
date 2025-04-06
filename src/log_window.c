@@ -1,4 +1,5 @@
 #include "log_window.h"
+#include <assert.h>
 
 static void free_node(Node *node)
 {
@@ -402,7 +403,7 @@ static void go_to_previous_occourence(Log_Window *window) {
     Node *n = window->lines_to_display->head;                              
     // First we need to find the current occourence
     if (window->marked_term_in_line.text != NULL) {
-      for (size_t index = 0; index < window->lines_to_display->size; index++) 
+      for (size_t index = 0; index < window->lines_to_display->size - 1; index++) 
       {                                                   
         String_View* e = n->value;                        
         char* substring = strstr(e->text, window->search_term); 
@@ -411,11 +412,19 @@ static void go_to_previous_occourence(Log_Window *window) {
           break;
         }
         n = n->next;
+        assert(n->value);
       }
     }
 
+    if (found_index == 0) {
+      found_index = window->lines_to_display->size - 1;
+      n = window->lines_to_display->tail;
+      assert(n->value);
+    }
+
     for (size_t index = found_index; index > 0; index--) 
-    {                                                   
+    {
+      assert(n->value);
       String_View* e = n->value;                        
       char* substring = strstr(e->text, window->search_term); 
       if (substring != NULL && window->marked_term_in_line.text != substring) {
@@ -678,7 +687,7 @@ void set_filter_log_window(Log_Window *window, char *command)
         window->marked_term_in_line.size = 0;
         log_info("New search term is %s\n", window->search_term);
 
-        go_to_next_occourence(window);
+        go_to_previous_occourence(window); 
       }
       window->viewport->start = window->lines_to_display->size - window->rows;
       window->viewport->end = window->lines_to_display->size;

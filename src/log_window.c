@@ -447,9 +447,9 @@ static void go_to_previous_occourence(Log_Window *window) {
       n = n->previous;                                    
     }
 
-    //if (found_index - window->screen_offset < window->viewport->end) {
-    //  window->screen_offset = window->viewport->start - found_index; 
-    //}
+    if (found_index - window->screen_offset < window->viewport->start) {
+      window->screen_offset = window->viewport->start - found_index; 
+    }
 
     if (found_index == -1) {
       window->marked_term_in_line.text = NULL;

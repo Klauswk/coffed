@@ -135,6 +135,17 @@ static void redraw_log(Log_Window *window, Viewport *vp, int screen_offset)
 {
   clear_log_window(window);
 
+  if (window->lines_to_display->size < (window->rows)) {
+    wclear(window->window);
+    for (int i = 0; i < window->lines_to_display->size; i++)
+    {
+      increase_line_counter_by(window, 1);
+      String_View *sv = list_get_value_at(window->lines_to_display, i);
+      add_line_to_log(window, *sv);
+    }
+    return;
+  }
+
   int start = vp->start - screen_offset;
   int end = vp->end - screen_offset;
 
@@ -398,7 +409,7 @@ static void go_to_next_occourence(Log_Window *window) {
 
 static void go_to_previous_occourence(Log_Window *window) {
   if (window->search_term && *window->search_term) {
-    int found_index = 0;
+    int found_index = -1;
 
     Node *n = window->lines_to_display->head;                              
     // First we need to find the current occourence
@@ -416,19 +427,19 @@ static void go_to_previous_occourence(Log_Window *window) {
       }
     }
 
-    if (found_index == 0) {
+    if (found_index == -1) {
       found_index = window->lines_to_display->size - 1;
       n = window->lines_to_display->tail;
       assert(n->value);
     }
 
-    for (size_t index = found_index; index > 0; index--) 
+    for (int index = found_index; index >= 0; index--) 
     {
       assert(n->value);
       String_View* e = n->value;                        
       char* substring = strstr(e->text, window->search_term); 
       if (substring != NULL && window->marked_term_in_line.text != substring) {
-        found_index = 1;
+        found_index = index;
         window->marked_term_in_line.text = substring;
         window->marked_term_in_line.size = strlen(window->search_term);
         break;
@@ -436,12 +447,15 @@ static void go_to_previous_occourence(Log_Window *window) {
       n = n->previous;                                    
     }
 
-    if (!found_index) {
+    //if (found_index - window->screen_offset < window->viewport->end) {
+    //  window->screen_offset = window->viewport->start - found_index; 
+    //}
+
+    if (found_index == -1) {
       window->marked_term_in_line.text = NULL;
       window->marked_term_in_line.size = 0;
     }
   }
-
   redraw_log(window, window->viewport, window->screen_offset);
 }
 
@@ -687,11 +701,10 @@ void set_filter_log_window(Log_Window *window, char *command)
         window->marked_term_in_line.size = 0;
         log_info("New search term is %s\n", window->search_term);
 
-        go_to_previous_occourence(window); 
       }
       window->viewport->start = window->lines_to_display->size - window->rows;
       window->viewport->end = window->lines_to_display->size;
-      redraw_log(window, window->viewport, window->screen_offset);
+      go_to_previous_occourence(window); 
     }
     else
     {

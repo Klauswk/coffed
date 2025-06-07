@@ -369,6 +369,7 @@ static void move_to_bottom(Log_Window *window)
 static void go_to_next_occourence(Log_Window *window) {
   if (window->search_term && *window->search_term) {
     int found_index = 0;
+    int next_index = -1;
 
     Node *n = window->lines_to_display->head;                              
 
@@ -391,7 +392,7 @@ static void go_to_next_occourence(Log_Window *window) {
       String_View* e = n->value;                        
       char* substring = strstr(e->text, window->search_term); 
       if (substring != NULL && window->marked_term_in_line.text != substring) {
-        found_index = 1;
+        next_index = index;
         window->marked_term_in_line.text = substring;
         window->marked_term_in_line.size = strlen(window->search_term);
         break;
@@ -399,11 +400,18 @@ static void go_to_next_occourence(Log_Window *window) {
       n = n->next;                                    
     }
 
-    if (!found_index) {
+    if (next_index < 0) {
       window->marked_term_in_line.text = NULL;
       window->marked_term_in_line.size = 0;
+    } else {
+      if (next_index + 1 > (window->viewport->end - window->screen_offset)) {
+        window->screen_offset = window->screen_offset - (next_index - found_index);
+      } else if (found_index - window->screen_offset < window->viewport->start) {
+        window->screen_offset = window->viewport->start - found_index; 
+      }
     }
   }
+
   redraw_log(window, window->viewport, window->screen_offset);
 }
 

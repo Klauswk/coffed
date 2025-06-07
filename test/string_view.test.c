@@ -11,22 +11,22 @@ static void test_chop_by_line() {
     String_View sv = build_from_char(test, strlen(test) + 1);
 
     String_View nl;
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, "This ", nl.size) == 0);
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, "is a ", nl.size) == 0);
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, "examp", nl.size) == 0);
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, "le of", nl.size) == 0);
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, " test", nl.size) == 0);
-    nl = get_next_line(&sv, 5);
+    nl = chop_by_size(&sv, 5);
     svs[counter++] = nl;
     assert(strncmp(nl.text, "s", nl.size) == 0);
 }

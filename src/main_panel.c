@@ -19,7 +19,7 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		snprintf(error_buffer, 4096, "It was not possible to open the file %s : %s \n", (char *)file_location, strerror(errno));
 		return false;
 	}
-
+  
 	struct stat file_stat1;
 	int result = fstat(fileno(fd), &file_stat1);
 

@@ -36,7 +36,6 @@ static size_t strnwidth(const char *s, size_t n, size_t offset)
     size_t wc_len = 0;
     size_t width = 0;
 
-    // Start in the initial shift state
     memset(&shift_state, '\0', sizeof shift_state);
 
     for (size_t i = 0; i < n; i += wc_len)
@@ -192,6 +191,14 @@ static void move_to_bottom(Command_Window *window) {
   window->callback(window->parent, ":MOVE_TO_BOTTOM\t");
 }
 
+static void move_to_next_occourence(Command_Window *window) {
+  window->callback(window->parent, ":NEXT_OCCURRENCE\t");
+}
+
+static void move_to_previous_occourence(Command_Window *window) {
+  window->callback(window->parent, ":PREV_OCCURRENCE\t");
+}
+
 Command_Window create_command_window(int parentRows, int parentColumn, int buffer_size, void *parent, Submit_Filter_Callback callback)
 {
     Command_Window window = {0};
@@ -225,7 +232,6 @@ Command_Window create_command_window(int parentRows, int parentColumn, int buffe
 bool handle_input_command_window(Command_Window *window)
 {
     int input = wgetch(window->window);
-    
 
     if (input != -1)
     {
@@ -235,13 +241,13 @@ bool handle_input_command_window(Command_Window *window)
             return false;
         }
         
-        if (input == 27 && (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')) {
+        if (input == 29 && (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '&' || rl_line_buffer[0] == '/' )) {
           log_info("Typed ESC, clearing the input\n");
           forward_to_readline(21);
           return true;
         }
 
-        if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '/')
+        if (rl_line_buffer[0] == ':' || rl_line_buffer[0] == '&' || rl_line_buffer[0] == '/')
         {
             log_info("Typed the character with code %d and value %s\n", input, keyname(input));
 
@@ -259,7 +265,6 @@ bool handle_input_command_window(Command_Window *window)
             log_info("Go up \n");
             window->callback(window->parent, ":GO_UP\t");
 
-            // set_cursor_at_command_window(window);
             return false;
         }
         else if (input == 'j')
@@ -267,7 +272,6 @@ bool handle_input_command_window(Command_Window *window)
             log_info("Go down \n");
             window->callback(window->parent, ":GO_DOWN\t");
 
-            // set_cursor_at_command_window(window);
             return false;
         }
         else if (input == ('w' & 0x1F))
@@ -313,9 +317,15 @@ bool handle_input_command_window(Command_Window *window)
             log_info("Bottom of the screen\n");
             move_to_bottom(window);
             return false;
+        } else if (input == 'n') {
+          move_to_next_occourence(window);
+          return false;
+        } else if (input == 'N') {
+          move_to_previous_occourence(window);
+          return false;
         }
 
-        if (input == ':' || input == '/')
+        if (input == ':' || input == '&' || input == '/')
         {
             forward_to_readline(input);
         }
@@ -337,8 +347,5 @@ void resize_command_window(Command_Window *window, int parentRows, int parentCol
 
     command_Window = *window;
 
-    // wmove(window->window, window->cursor_y, window->cursor_x);
-
     wtimeout(window->window, 10);
-    // mvwprintw(window->window, 1, 1, "%*.*s", 0, window->columns, window->command);
 }

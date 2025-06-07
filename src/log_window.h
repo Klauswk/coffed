@@ -12,23 +12,26 @@
 #include "string_view.h"
 
 typedef struct Viewport {
-	int start;
-	int end;
+  int start;
+  int end;
 } Viewport;
 
 typedef struct Log_Window {
-	WINDOW* window;
-	Viewport* viewport;
-	int columns;
-	int rows;
-	int cursor_x;
-	int cursor_y;
-    int line_cursor;
-	int screen_offset;
-	List* lines_to_display;
-	List* log_view_list;
-	Log_View* lv_current;
-	Log_View_Header* log_view_header;
+  WINDOW* window;
+  Viewport* viewport;
+  int columns;
+  int rows;
+  int cursor_x;
+  int cursor_y;
+  int line_cursor;
+  int screen_offset;
+  List* lines_to_display;
+  List* log_view_list;
+  Log_View* lv_current;
+  Log_View_Header* log_view_header;
+  char* search_term;
+  //Pointer to the current marked term, since we could have multiple in the same line, we need to mark both the line and the current word.
+  String_View marked_term_in_line;
 } Log_Window;
 
 Log_Window create_log_window(int parentRows, int parentColumn);

@@ -9,16 +9,16 @@ String_View build_from_char(char* text, size_t size) {
     return sv;
 }
 
-String_View get_next_line(String_View* sv, size_t line_size) {
+String_View chop_by_size(String_View* sv, size_t size) {
     
-    if (line_size > sv->size) {
-        line_size = sv->size;
+    if (size > sv->size) {
+        size = sv->size;
     }
 
-    String_View result = build_from_char(sv->text, line_size);
+    String_View result = build_from_char(sv->text, size);
 
-    sv->text  += line_size;
-    sv->size -= line_size;
+    sv->text  += size;
+    sv->size -= size;
 
     return result;
 }
@@ -65,5 +65,7 @@ char* to_cstr(String_View sv) {
   return cstr;
 }
 
-
+char* find_text_in_sv(const String_View sv, const char* needle) {
+  return strstr(sv.text, needle);
+}
 

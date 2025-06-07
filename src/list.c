@@ -126,6 +126,29 @@ void remove_value_from_list(List* list, void *value)
     } while(current != NULL) ;
 }
 
+Node *list_get_node_at(List* list, size_t position) {
+	Node* node = list->head;
+
+	if(node == NULL) {
+		return NULL;
+	}
+
+	for(size_t i = 0; i <= position; i++) {
+		
+		if(i == position) {
+			return node;
+		}
+		
+		if(node->next == NULL) {
+			return NULL;
+		}
+
+		node = node->next;
+	}
+
+	return NULL;
+}
+
 void* list_get_value_at(List* list, size_t position) {
 	Node* node = list->head;
 

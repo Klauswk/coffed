@@ -111,6 +111,8 @@ static void readline_redisplay(void)
     cmd_win_redisplay(false);
 }
 
+static char* history_location;
+
 static void got_command(char *line)
 {
     if (*line)
@@ -124,7 +126,7 @@ static void got_command(char *line)
         strncpy(command_Window.command, line, line_size);
         command_Window.command[line_size + 1] = 0;
         command_Window.callback(command_Window.parent, command_Window.command);
-        write_history(HISTORY_LOCATION);
+        write_history(history_location);
         free(line);
     }
 }
@@ -144,6 +146,30 @@ static void init_readline(void)
     rl_redisplay_function = readline_redisplay;
     read_history(HISTORY_LOCATION);
     rl_callback_handler_install("> ", got_command);
+
+    const char* home_location = getenv("HOME");
+
+    if (home_location != NULL) {
+      log_info("Setting history location as: %s\n", home_location);
+
+      size_t home_length = strlen(home_location);
+      size_t file_history_size = strlen(HISTORY_LOCATION);
+
+      log_info("The total size of %s/%s is: %d\n", home_location, HISTORY_LOCATION, home_length + file_history_size);
+
+      //Adding the additional / and new line, thus +2
+      history_location = malloc(home_length + file_history_size + 3);
+
+      memcpy(history_location, home_location, home_length);
+      history_location[home_length] = '/';
+
+      memcpy(history_location + home_length + 1, HISTORY_LOCATION, file_history_size);
+      history_location[home_length + 1 + file_history_size] = 0;
+
+      log_info("Setting history location as: %s\n", history_location);
+    } else {
+      history_location = HISTORY_LOCATION;
+    }
 }
 
 static void page_down(Command_Window *window)

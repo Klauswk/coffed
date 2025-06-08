@@ -7,7 +7,5 @@ if [ -z "$DESTDIR" ]; then
 fi
 
 mkdir -p $DESTDIR 
-mkdir -p $DESTDIR/formatters
 
 cp ./target/coffed $DESTDIR 
-cp ./formatters/nop.so $DESTDIR/formatters

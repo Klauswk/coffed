@@ -4,15 +4,13 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include "list.h"
-#include "formater.h"
 
 typedef struct {
-
-    int cols;
-    int rows;
-    bool isShowing;
-    WINDOW* border_win;
-    WINDOW* window;
+  int cols;
+  int rows;
+  bool isShowing;
+  WINDOW* border_win;
+  WINDOW* window;
 
 } File_List_View;
 

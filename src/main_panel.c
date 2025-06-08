@@ -31,9 +31,9 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 		return false;
 	}
 
-	FOR_EACH_IN_LIST(Log_File*, log_file, mp->list_file_descriptors, {
+	FOR_EACH_IN_LIST(FILE*, file, mp->list_file_descriptors, {
 		struct stat file_stat;
-		int rStat = fstat(fileno(log_file->fd), &file_stat);
+		int rStat = fstat(fileno(file), &file_stat);
 
 		if (rStat >= 0)
 		{
@@ -48,12 +48,8 @@ static bool add_file_to_list(Main_Panel *mp, char *file_location, char error_buf
 	});
 
 	fseek(fd, 0, SEEK_END);
-	
-	Log_File* log_file = malloc(sizeof(Log_File));
-	log_file->fd = fd;
-	log_file->plugin_name = "nop";
-	add_to_list(mp->list_file_descriptors, log_file);
 
+  add_to_list(mp->list_file_descriptors, fd);
 	return true;
 }
 
@@ -76,8 +72,6 @@ static void hide_file_list_panel(Main_Panel *mp)
 	mp->lfv.isShowing = false;
 	hide_panel(mp->top);
 }
-
-static Hash_Map plugins;
 
 static void change_filter_status(void *main_panel, char *command)
 {
@@ -127,7 +121,7 @@ static void change_filter_status(void *main_panel, char *command)
 
 		if (file_number >= 0)
 		{
-			Log_File *f = list_get_value_at(mp->list_file_descriptors, file_number);
+			FILE *f = list_get_value_at(mp->list_file_descriptors, file_number);
 			if (mp->current_file->value == f)
 			{
 				if (mp->current_file->next == NULL)
@@ -143,141 +137,6 @@ static void change_filter_status(void *main_panel, char *command)
 				remove_value_from_list(mp->list_file_descriptors, f);
 		}
 
-		return;
-	}
-	else if (command != NULL && strstr(command, ":setPlugin") != NULL)
-	{
-		size_t command_exp_size = strlen(":setPlugin ");
-		size_t command_size = strlen(command);
-		if (command_size < command_exp_size)
-		{
-      log_info("No plugin name define\n");
-			put_message(mp, "No file defined", ML_ERROR);
-			return;
-		}
-    String_View ctrs = build_from_char(command+command_exp_size, command_size - command_exp_size);
-
-    String_View plugin_name = chop_by_delimiter(' ', &ctrs);
-
-    if (plugin_name.size == 0) {
-      log_info("No plugin name define\n");
-      put_message(mp, "No plugin define", ML_ERROR);
-      return;
-    }
-    
-    char* cstr = to_cstr(plugin_name);
-
-    Formater_Plugin* fp = NULL;
-
-    fp = get_value(&plugins, cstr);
-    
-    free(cstr);
-
-    if (fp == NULL) {
-      log_info("Plugin named "String_View_Fmt" not found\n", String_View_Arg(plugin_name));
-      return;
-    }
-    
-    String_View log_file_id = chop_by_delimiter(' ', &ctrs);
-
-    if (log_file_id.size == 0) {
-      log_info("No file id define\n");
-      put_message(mp, "No file id define", ML_ERROR);
-      return;
-    }
-    
-    for (size_t i = 0; i < log_file_id.size; i++){
-      if (isdigit(log_file_id.text[i]) == 0) {
-        log_info("The character %c is not a digit in string "String_View_Fmt"\n", log_file_id.text[i], String_View_Arg(log_file_id));
-        return ;
-      }
-    }
-
-    cstr = to_cstr(log_file_id);
-
-    int log_file_pos = (int) strtol(cstr, NULL, 10);
-    
-    free(cstr);
-   
-    Log_File* log_file = (Log_File*) list_get_value_at(mp->list_file_descriptors, log_file_pos);
-    
-    if(log_file != NULL) {
-      log_file->plugin_name = fp->name_version_callback(); 
-      log_info("Plugin %s set to log %d \n", log_file->plugin_name, log_file_pos);
-    } else {
-      log_info("Log file in position %d not found\n", log_file_pos);
-    }
-
-
-		return;
-	}
-	else if (command != NULL && strstr(command, ":unloadPlugin") != NULL)
-	{
-		size_t command_size = strlen(command);
-		if (command_size < 12)
-		{
-			log_info("Got into no file defined\n");
-			put_message(mp, "No file defined", ML_ERROR);
-			return;
-		}
-		char file_path[BUFFER_SIZE] = {0};
-		strncpy(file_path,command + 14, BUFFER_SIZE);
-		
-		log_info("Unloading plugin: %s from command: %s\n", file_path, command);
-    
-    if (strstr(file_path, "nop") != NULL) {
-      log_info("You can't remove the nop formatter\n");
-      return;
-    }
-
-    Formater_Plugin* fp = NULL;
-
-    fp = get_value(&plugins, file_path);
-	  
-    if (fp == NULL) {
-      log_info("The plugin %s was not found\n", file_path);
-
-      return;
-    }
-    
-    Formater_Plugin* nop = get_value(&plugins, "nop");
-
-    if (nop == NULL) {
-       log_info("It was not possible to load the nop formatter, something went wrong\n");
-       return;
-    }
-
-    FOR_EACH_IN_LIST(Log_File*, log_file, mp->list_file_descriptors, {
-        if (strstr(file_path, log_file->plugin_name) != NULL) {
-            log_file->plugin_name = "nop";
-        }
-    });
-   
-    delete_value(&plugins, file_path); 
-    log_info("The plugin was unloaded from the hash_table\n");
-	
-		return;
-	}
-	else if (command != NULL && strstr(command, ":loadPlugin") != NULL)
-	{
-		size_t command_size = strlen(command);
-		if (command_size < 12)
-		{
-			log_info("Got into no file defined\n");
-			put_message(mp, "No file defined", ML_ERROR);
-			return;
-		}
-		char file_path[BUFFER_SIZE] = {0};
-		strncpy(file_path,command + 12, BUFFER_SIZE);
-		
-		log_info("Loading plugin: %s from command: %s\n", file_path, command);
-	  Formater_Plugin* formater = malloc(sizeof(Formater_Plugin));
-	
-		if (load_plugin(formater, file_path) == 0) {
-	     put_value(&plugins, file_path, formater); 
-       log_info("The plugin was loaded into the hash_table\n");
-   	}
-	
 		return;
 	}
 	else if (command != NULL && strstr(command, ":setM") != NULL)
@@ -337,19 +196,6 @@ static void change_filter_status(void *main_panel, char *command)
 
 	set_filter_log_window(&mp->lw, command);
 }
-
-static int load_nop_plugin() {	
-  Formater_Plugin* plug = malloc(sizeof(Formater_Plugin));
-	
-	if (load_plugin(plug, "nop") == 0) {
-	    put_value(&plugins, plug->name_version_callback(), plug); 
-      log_info("The plugin %s was loaded into the hash_table\n", plug->name_version_callback());
-  } else {
-			log_info("The default formater plugin could not be loaded");
-			exit(1);
-	}
-}
-
 
 int start_app(List *files)
 {
@@ -413,24 +259,20 @@ int start_app(List *files)
 	mp.top = mp.panels[1];
 
 	Log log = {0};
-	
-	load_nop_plugin();
 
 	while (running)
 	{
 		update_panels();
-		
-		Log_File* current_file = (Log_File*) mp.current_file->value;
 
-		get_next_log(&log, current_file->fd);
+    get_next_log(&log, ((FILE *)mp.current_file->value));
 
 		if (log.count > 0)
 		{
 			getyx(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			char* result = get_value(&plugins, current_file->plugin_name)->callback(log.line, (size_t) log.count);		
-			process_log_window(&mp.lw, result, strlen(result) + 1);
+			//char* result = get_value(&plugins, current_file->plugin_name)->callback(log.line, (size_t) log.count);		
+      process_log_window(&mp.lw, log.line, log.count);
+			//process_log_window(&mp.lw, result, strlen(result) + 1);
 			wmove(mp.cw.window, mp.cw.cursor_y, mp.cw.cursor_x);
-			free(result);
 			log.count = 0;
 		}
 		else

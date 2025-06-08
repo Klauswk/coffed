@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -xe
+
+if [ -z "$DESTDIR" ]; then
+  DESTDIR=~/opt
+fi
+
+mkdir -p $DESTDIR 
+mkdir -p $DESTDIR/formatters
+
+cp ./target/coffed $DESTDIR 
+cp ./formatters/nop.so $DESTDIR/formatters

@@ -19,3 +19,7 @@ debug: all
 .PHONY: test
 test:
 	cd test && ./build.sh $(unittest)
+
+.PHONY: install
+install: all
+	./install

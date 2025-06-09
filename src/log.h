@@ -10,9 +10,9 @@
 #include "logger.h"
 
 typedef struct {
-    char* line;
-    size_t count;
-    size_t capacity;
+  char* line;
+  size_t count;
+  size_t capacity;
 } Log;
 
 bool get_next_log(Log* log, FILE* file);

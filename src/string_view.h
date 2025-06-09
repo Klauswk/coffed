@@ -9,8 +9,8 @@
 #define String_View_Arg(sv) (int) (sv).size, (sv).text
 
 typedef struct {
-    char *text;
-    size_t size;
+  char *text;
+  size_t size;
 } String_View;
 
 String_View build_from_char(char* text, size_t size);

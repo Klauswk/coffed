@@ -5,9 +5,9 @@
 #include "list.h"
 
 typedef struct Log_View {
-	char* filter_command;
-	List* content_list;
-	int is_main;
+  char* filter_command;
+  List* content_list;
+  int is_main;
 } Log_View;
 
 int add_to_log_view(Log_View* log_view, char* line, int line_size);

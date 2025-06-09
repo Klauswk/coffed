@@ -8,16 +8,16 @@
 #include "logger.h"
 
 typedef struct Log_View_Header_Item {
-	char* header;
-    int is_main;
-    int header_size;
-    WINDOW* header_window;
-    WINDOW* header_border;
+  char* header;
+  int is_main;
+  int header_size;
+  WINDOW* header_window;
+  WINDOW* header_border;
 } Log_View_Header_Item;
 
 typedef struct Log_View_Header {
-	List* headers;
-    Log_View_Header_Item* current;
+  List* headers;
+  Log_View_Header_Item* current;
 } Log_View_Header;
 
 

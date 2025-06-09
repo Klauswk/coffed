@@ -7,16 +7,16 @@
 #include <stdbool.h>
 
 enum Message_Level {
-	ML_ERROR = 10,
-	ML_INFO = 11,
-	ML_WARNING = 12
+  ML_ERROR = 10,
+  ML_INFO = 11,
+  ML_WARNING = 12
 };
 
 typedef struct Message_Window {
-	WINDOW* window;
-	int columns;
-	int rows;
-    bool is_showing;
+  WINDOW* window;
+  int columns;
+  int rows;
+  bool is_showing;
 } Message_Window;
 
 Message_Window create_message_window(int parentRows, int parentColumn);
